@@ -1,0 +1,7 @@
+region,category,bin_name,bin_color,instructions,examples
+Dortmund,packaging,Gelbe Tonne,#F2C200,"Empty it, no need to wash.","yogurt cup, plastic bottle, tin can, drink carton"
+Dortmund,paper,Blaue Tonne,#1F5FAD,Flatten boxes. Only clean and dry paper.,"newspaper, cardboard box, envelope"
+Dortmund,glass,Glascontainer,#2E8B57,"Sort by colour: white, green, brown. No lids.","wine bottle, jam jar"
+Dortmund,organic,Biotonne,#8B5A2B,No plastic bags. Wrap food waste in newspaper.,"fruit peel, coffee grounds, eggshells"
+Dortmund,residual,Graue Tonne,#6E6E6E,Everything that cannot be recycled.,"greasy pizza box, nappy, vacuum bag"
+Dortmund,hazardous,Wertstoffhof / Schadstoffmobil,#C0392B,Never in household bins. Bring to a collection point.,"batteries, paint, energy-saving lamp"
