@@ -1,5 +1,5 @@
 
-from classification_result import ClassificationResult
+from .classification_result import ClassificationResult
 
 
 class ClassificationService:
