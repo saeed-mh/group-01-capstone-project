@@ -1,94 +1,82 @@
 
-from datetime import datetime
+from .classification_result import ClassificationResult
 
 
-class ClassificationResult:
-    """Stores the result of a waste classification."""
+class ClassificationService:
+    """Handles waste classification using the OpenAI client."""
 
-    def __init__(self, id, item_name, category, region, bin_name,
-                 explanation, input_type, is_correct=None):
-
-        self._id = id
-        self.item_name = item_name
-        self.category = category
-        self.region = region
-        self.bin_name = bin_name
-        self.explanation = explanation
-        self.input_type = input_type
-        self.is_correct = is_correct
-        self._created_at = datetime.now()
+    def __init__(self, ai_client, rule_service=None, repository=None):
+        self.ai_client = ai_client
+        self.rule_service = rule_service
+        self.repository = repository
 
     @property
-    def id(self):
-        return self._id
+    def ai_client(self):
+        return self._ai_client
+
+    @ai_client.setter
+    def ai_client(self, value):
+        if value is None:
+            raise ValueError("AI client cannot be empty")
+        self._ai_client = value
 
     @property
-    def item_name(self):
-        return self._item_name
+    def rule_service(self):
+        return self._rule_service
 
-    @item_name.setter
-    def item_name(self, value):
-        if not value or not value.strip():
+    @rule_service.setter
+    def rule_service(self, value):
+        self._rule_service = value
+
+    @property
+    def repository(self):
+        return self._repository
+
+    @repository.setter
+    def repository(self, value):
+        self._repository = value
+
+    def classify_image(self, image, region):
+        if not image:
+            raise ValueError("Image cannot be empty")
+
+        ai_result = self.ai_client.analyze_image(image)
+        return self._create_result(ai_result, region, "image")
+
+    def classify_text(self, text, region):
+        if not text or not text.strip():
             raise ValueError("Item name cannot be empty")
-        self._item_name = value.strip()
 
-    @property
-    def category(self):
-        return self._category
+        ai_result = self.ai_client.analyze_text(text)
+        return self._create_result(ai_result, region, "text")
 
-    @category.setter
-    def category(self, value):
-        if value not in ["packaging", "paper", "glass",
-                         "organic", "residual", "hazardous"]:
-            raise ValueError("Invalid waste category")
-        self._category = value
+    def _create_result(self, ai_result, region, input_type):
+        category = ai_result["category"]
+        bin_name = ""
 
-    @property
-    def region(self):
-        return self._region
+        if self.rule_service is not None:
+            rule = self.rule_service.get_rule(category, region)
 
-    @region.setter
-    def region(self, value):
-        if not value or not value.strip():
-            raise ValueError("Region cannot be empty")
-        self._region = value.strip()
+            if rule is not None:
+                bin_name = rule.bin_name
 
-    @property
-    def bin_name(self):
-        return self._bin_name
+        result = ClassificationResult(
+            id=None,
+            item_name=ai_result["item_name"],
+            category=category,
+            region=region,
+            bin_name=bin_name,
+            explanation=ai_result["explanation"],
+            input_type=input_type
+        )
 
-    @bin_name.setter
-    def bin_name(self, value):
-        self._bin_name = value
+        return result
 
-    @property
-    def explanation(self):
-        return self._explanation
+    def save_feedback(self, id, is_correct):
+        if not isinstance(is_correct, bool):
+            raise ValueError("Feedback must be True or False")
 
-    @explanation.setter
-    def explanation(self, value):
-        self._explanation = value
+        if self.repository is None:
+            raise ValueError("Database repository is not configured")
 
-    @property
-    def input_type(self):
-        return self._input_type
-
-    @input_type.setter
-    def input_type(self, value):
-        if value not in ["image", "text"]:
-            raise ValueError("Input type must be image or text")
-        self._input_type = value
-
-    @property
-    def is_correct(self):
-        return self._is_correct
-
-    @is_correct.setter
-    def is_correct(self, value):
-        if value is not None and not isinstance(value, bool):
-            raise ValueError("Feedback must be True, False or None")
-        self._is_correct = value
-
-    @property
-    def created_at(self):
-        return self._created_at
+        self.repository.update_feedback(id, is_correct)
