@@ -1,3 +1,10 @@
+
+import os
+import json
+import base64
+from openai import OpenAI
+from dotenv import load_dotenv
+
 class OpenAIClient:
     """Handles communication with the OpenAI API."""
 
