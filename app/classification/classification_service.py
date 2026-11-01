@@ -81,3 +81,5 @@ class ClassificationService:
             raise ValueError("Database repository is not configured")
 
         self.repository.update_feedback(id, is_correct)
+
+
