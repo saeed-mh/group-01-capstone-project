@@ -1,8 +1,10 @@
 
 from stream.event import Event
-from stream_source import StreamSource
-from confidence_filter import ConfidenceFilter
-from stream.pipeline import Pipeline
+from stream.stream_source import StreamSource
+from stream.confidence_filter import ConfidenceFilter
+from stream.material_mapper import MaterialMapper
+from stream.routing_assigner import RoutingAssigner
+
 
 events = [
     Event(1, ["plastic"], 0.95, [10, 20, 50, 60]),
@@ -12,8 +14,7 @@ events = [
 
 source = StreamSource(events)
 
-# pipeline = Pipeline([ConfidenceFilter(0.7)])
-pipeline = ConfidenceFilter(0.7) | ConfidenceFilter(0.8)
+pipeline = ConfidenceFilter(0.7) | MaterialMapper() | RoutingAssigner()
 
 for event in pipeline.run(source):
     print(event)
