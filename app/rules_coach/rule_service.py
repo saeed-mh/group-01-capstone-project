@@ -35,6 +35,10 @@ class RuleService:
             if rule.region.lower() == region.lower()
         ]
 
+    def get_regions(self):
+        """Return all cities that have rules, sorted A–Z."""
+        return sorted({rule.region for rule in self.repository.get_all()})
+
     def search(self, text, region):
         """Return all rules of this city whose category, bin or examples contain the text."""
         text = text.lower().strip()

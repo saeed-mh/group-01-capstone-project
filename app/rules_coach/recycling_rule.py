@@ -75,3 +75,15 @@ class RecyclingRule:
         if not value or not value.strip():
             raise ValueError("examples cannot be empty")
         self._examples = value.strip()
+
+    def to_dict(self):
+        """Return the rule as a plain dict, e.g. for JSON."""
+        return {
+            "id": self.id,
+            "region": self.region,
+            "category": self.category,
+            "bin_name": self.bin_name,
+            "bin_color": self.bin_color,
+            "instructions": self.instructions,
+            "examples": self.examples,
+        }
