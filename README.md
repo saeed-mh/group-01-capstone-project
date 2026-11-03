@@ -12,6 +12,9 @@ A web app that classifies waste from a photo or text with OpenAI and shows the c
 | Saeed Mohammadi Gahrooei | 7224510 | Recycling Rules & Sustainability Coach | `bins.html`, `coach.html`, `admin.html` |
 | Amin Elkasaby | 7224933 | Statistics Dashboard | `dashboard.html` |
 
+## Homework Assignment 2: Stream Processing Framework
+<img width="2320" height="1030" alt="stream_framework" src="https://github.com/user-attachments/assets/ed2f8a33-6bab-48f7-a0ae-7dc61c162333" />
+
 ## System Design
 
 ### Subsystem 1: Waste Classification
@@ -22,3 +25,4 @@ A web app that classifies waste from a photo or text with OpenAI and shows the c
 
 ### Subsystem 3: Statistics Dashboard
 <img width="2646" height="1263" alt="image" src="https://github.com/user-attachments/assets/1ad3434c-63cb-4623-a3e1-5ce4e7cbdb33" />
+
