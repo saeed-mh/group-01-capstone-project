@@ -26,3 +26,25 @@ A web app that classifies waste from a photo or text with OpenAI and shows the c
 ### Subsystem 3: Statistics Dashboard
 <img width="2646" height="1263" alt="image" src="https://github.com/user-attachments/assets/1ad3434c-63cb-4623-a3e1-5ce4e7cbdb33" />
 
+## How to run
+
+1. Clone the assignment branch and open the project folder:
+   ```bash
+   git clone -b HomeworkAssignment3 https://github.com/saeed-mh/group-01-capstone-project.git
+   cd group-01-capstone-project
+   ```
+2. Create a virtual environment and install the requirements:
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate        # Windows
+   source venv/bin/activate     # macOS / Linux
+   pip install -r requirements.txt
+   ```
+3. Copy `.env.example` to `.env` and add your OpenAI API key.
+4. Start the app:
+   ```bash
+   python run.py
+   ```
+5. Open http://127.0.0.1:5000
+
+The SQLite database (`data/app.db`) is created automatically on the first start, and the recycling rules are loaded from `data/rules.csv`.
