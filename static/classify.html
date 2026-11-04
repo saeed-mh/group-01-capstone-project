@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classification History</title>
+</head>
+<body>
+    <h1>Waste Classification History</h1>
+
+    <p>Latest 10 waste classifications</p>
+
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Region</th>
+                <th>Bin</th>
+                <th>Explanation</th>
+                <th>Input Type</th>
+                <th>Correct</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+
+        <tbody id="classifications"></tbody>
+    </table>
+
+    <p id="message"></p>
+
+    <script src="/static/js/classify.js"></script>
+</body>
+</html>
