@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics Dashboard</title>
+</head>
+<body>
+    <h1>Statistics Dashboard</h1>
+
+    <p>Total classifications: <span id="total">0</span></p>
+    <p>Recycling rate: <span id="recycling-rate">0%</span></p>
+    <p>Accuracy from user feedback: <span id="accuracy">No feedback yet</span></p>
+
+    <h2>Waste categories</h2>
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr><th>Category</th><th>Count</th></tr>
+        </thead>
+        <tbody id="categories"></tbody>
+    </table>
+
+    <h2>Classifications per day</h2>
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr><th>Date</th><th>Count</th></tr>
+        </thead>
+        <tbody id="daily-counts"></tbody>
+    </table>
+
+    <h2>Top 5 items</h2>
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr><th>Item</th><th>Count</th></tr>
+        </thead>
+        <tbody id="top-items"></tbody>
+    </table>
+
+    <p id="message"></p>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

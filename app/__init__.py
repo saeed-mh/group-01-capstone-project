@@ -6,6 +6,7 @@ from flask import Flask, jsonify, request
 from app.rules_coach.rule_repository import RuleRepository
 from app.rules_coach.rule_service import RuleService
 from app.classification.classification_repository import ClassificationRepository
+from app.statistics.statistics_service import StatisticsService
 
 def create_app():
     """Create and configure the Flask app."""
@@ -49,4 +50,15 @@ def create_app():
     def api_classifications():
         records = app.config["CLASSIFICATION_REPOSITORY"].get_recent(10)
         return jsonify(records)
+
+    @app.route("/dashboard")
+    def dashboard_page():
+        return app.send_static_file("dashboard.html")
+
+    @app.route("/api/stats")
+    def api_stats():
+        statistics = StatisticsService(db_path)
+        statistics.load_data()
+        return jsonify(statistics.chart_data())
+
     return app
