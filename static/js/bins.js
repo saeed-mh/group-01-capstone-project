@@ -7,11 +7,17 @@ async function loadRules(region) {
   const response = await fetch(
     `/api/bins?region=${encodeURIComponent(region)}`,
   );
-  const rules = await response.json();
+  const data = await response.json();
 
   rulesTable.innerHTML = "";
-  message.textContent =
-    rules.length === 0 ? `No rules found for ${region}.` : "";
+
+  if (!response.ok) {
+    message.textContent = data.error;
+    return;
+  }
+
+  message.textContent = "";
+  const rules = data;
 
   for (const rule of rules) {
     const row = document.createElement("tr");

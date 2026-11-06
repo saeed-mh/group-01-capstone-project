@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
 from app.classification.classification_repository import ClassificationRepository
+from app.errors import AppError
+from app.rules_coach.errors import RulesCoachError
 from app.rules_coach.rule_repository import RuleRepository
 from app.rules_coach.rule_service import RuleService
 from app.statistics.statistics_service import StatisticsService
@@ -25,6 +27,10 @@ def create_app():
     classification_repo.load_seed()
     app.config["CLASSIFICATION_REPOSITORY"] = classification_repo
 
+    @app.errorhandler(AppError)
+    def handle_app_error(error):
+        return jsonify(error.to_dict()), error.status_code
+
     @app.route("/")
     def home():
         return app.send_static_file("index.html")
@@ -41,6 +47,8 @@ def create_app():
     def api_bins():
         region = request.args.get("region", "Dortmund")
         rules = app.config["RULE_SERVICE"].get_rules(region)
+        if not rules:
+            raise RulesCoachError(f"No rules found for {region}", 404)
         return jsonify([rule.to_dict() for rule in rules])
 
     @app.route("/classify")
