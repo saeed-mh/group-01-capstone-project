@@ -48,3 +48,12 @@ A web app that classifies waste from a photo or text with OpenAI and shows the c
 5. Open http://127.0.0.1:5000
 
 The SQLite database (`data/app.db`) is created automatically on the first start, and the recycling rules are loaded from `data/rules.csv`.
+
+## Pages
+
+| Page | URL | Subsystem |
+|---|---|---|
+| Home | `/` | – |
+| Classification History | `/classify` | 1 – Waste Classification |
+| Bins Guide | `/bins` | 2 – Recycling Rules |
+| Statistics Dashboard | `/dashboard` | 3 – Statistics Dashboard |

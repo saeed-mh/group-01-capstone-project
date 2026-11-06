@@ -3,10 +3,11 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
+from app.classification.classification_repository import ClassificationRepository
 from app.rules_coach.rule_repository import RuleRepository
 from app.rules_coach.rule_service import RuleService
-from app.classification.classification_repository import ClassificationRepository
 from app.statistics.statistics_service import StatisticsService
+
 
 def create_app():
     """Create and configure the Flask app."""
@@ -18,15 +19,15 @@ def create_app():
     repository.init_db()
     repository.load_seed("data/rules.csv")
     app.config["RULE_SERVICE"] = RuleService(repository)
-    
+
     classification_repo = ClassificationRepository(db_path)
     classification_repo.init_db()
     classification_repo.load_seed()
     app.config["CLASSIFICATION_REPOSITORY"] = classification_repo
-    
+
     @app.route("/")
     def home():
-        return "Waste Sorting Assistant is running"
+        return app.send_static_file("index.html")
 
     @app.route("/bins")
     def bins_page():
