@@ -1,4 +1,5 @@
 import os
+import sqlite3
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
@@ -8,6 +9,7 @@ from app.errors import AppError
 from app.rules_coach.errors import RulesCoachError
 from app.rules_coach.rule_repository import RuleRepository
 from app.rules_coach.rule_service import RuleService
+from app.statistics.errors import StatisticsError
 from app.statistics.statistics_service import StatisticsService
 
 
@@ -66,8 +68,11 @@ def create_app():
 
     @app.route("/api/stats")
     def api_stats():
-        statistics = StatisticsService(db_path)
-        statistics.load_data()
-        return jsonify(statistics.chart_data())
+        try:
+            statistics = StatisticsService(db_path)
+            statistics.load_data()
+            return jsonify(statistics.chart_data())
+        except sqlite3.Error as error:
+            raise StatisticsError("Could not load statistics.", 500) from error
 
     return app
