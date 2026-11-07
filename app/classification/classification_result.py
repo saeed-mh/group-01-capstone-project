@@ -42,7 +42,7 @@ class ClassificationResult:
     def category(self, value):
         if isinstance(value, str):
             try:
-                value = WasteCategory(value)
+                value = WasteCategory(value.strip().lower())
             except ValueError:
                 raise ValueError("Invalid waste category")
 
