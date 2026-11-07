@@ -73,13 +73,10 @@ class ClassificationService:
 
         return result
 
-    def save_feedback(self, id, is_correct):
-        if not isinstance(is_correct, bool):
-            raise ValueError("Feedback must be True or False")
-
-        if self.repository is None:
-            raise ValueError("Database repository is not configured")
-
-        self.repository.update_feedback(id, is_correct)
+    
+    def save_feedback(self, result, is_correct):
+        """Store user feedback on a classification result."""
+        result.is_correct = is_correct
+        return result
 
 
