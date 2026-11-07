@@ -30,7 +30,7 @@ A web app that classifies waste from a photo or text with OpenAI and shows the c
 
 1. Clone the assignment branch and open the project folder:
    ```bash
-   git clone -b HomeworkAssignment3 https://github.com/saeed-mh/group-01-capstone-project.git
+   git clone -b HomeworkAssignment4 https://github.com/saeed-mh/group-01-capstone-project.git
    cd group-01-capstone-project
    ```
 2. Create a virtual environment and install the requirements:
@@ -46,6 +46,10 @@ A web app that classifies waste from a photo or text with OpenAI and shows the c
    python run.py
    ```
 5. Open http://127.0.0.1:5000
+6. Run the tests:
+   ```bash
+   python -m pytest
+   ```
 
 The SQLite database (`data/app.db`) is created automatically on the first start, and the recycling rules are loaded from `data/rules.csv`.
 
