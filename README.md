@@ -57,3 +57,7 @@ The SQLite database (`data/app.db`) is created automatically on the first start,
 | Classification History | `/classify` | 1 – Waste Classification |
 | Bins Guide | `/bins` | 2 – Recycling Rules |
 | Statistics Dashboard | `/dashboard` | 3 – Statistics Dashboard |
+
+## Presentation Video
+
+[Watch the team presentation](https://drive.google.com/file/d/1TDqwSLDj1nkhMvnjP7Jd2sDgwDl8A7ZK/view?usp=sharing)
