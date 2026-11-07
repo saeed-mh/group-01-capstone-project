@@ -1,18 +1,23 @@
 
+
 import os
 import json
 import base64
 from openai import OpenAI
 from dotenv import load_dotenv
 
+
 class OpenAIClient:
     """Handles communication with the OpenAI API."""
 
-    def __init__(self, api_key=None, model="gpt-4.1-mini"):
+    def __init__(self, api_key=None, model=None):
         load_dotenv()
 
         if api_key is None:
             api_key = os.getenv("OPENAI_API_KEY")
+
+        if model is None:
+            model = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
 
         self.api_key = api_key
         self.model = model

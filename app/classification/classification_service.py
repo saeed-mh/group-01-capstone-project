@@ -1,13 +1,15 @@
 
+
 from .classification_result import ClassificationResult
 
 
 class ClassificationService:
     """Handles waste classification using the OpenAI client."""
 
-    def __init__(self, ai_client, rule_service=None):
+    def __init__(self, ai_client, rule_service=None, repository=None):
         self.ai_client = ai_client
         self.rule_service = rule_service
+        self.repository = repository
 
     @property
     def ai_client(self):
@@ -26,6 +28,14 @@ class ClassificationService:
     @rule_service.setter
     def rule_service(self, value):
         self._rule_service = value
+
+    @property
+    def repository(self):
+        return self._repository
+
+    @repository.setter
+    def repository(self, value):
+        self._repository = value
 
     def classify_image(self, image, region):
         if not image:
@@ -62,3 +72,11 @@ class ClassificationService:
         )
 
         return result
+
+    
+    def save_feedback(self, result, is_correct):
+        """Store user feedback on a classification result."""
+        result.is_correct = is_correct
+        return result
+
+

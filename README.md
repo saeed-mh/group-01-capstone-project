@@ -13,18 +13,18 @@ A web app that classifies waste from a photo or text with OpenAI and shows the c
 | Amin Elkasaby | 7224933 | Statistics Dashboard | `dashboard.html` |
 
 ## Homework Assignment 2: Stream Processing Framework
-<img width="2320" height="1030" alt="stream_framework" src="https://github.com/user-attachments/assets/ed2f8a33-6bab-48f7-a0ae-7dc61c162333" />
+<img alt="stream_framework_uml" src="docs/stream_framework_uml.png" />
 
 ## System Design
 
 ### Subsystem 1: Waste Classification
-<img width="2518" height="1454" alt="image" src="https://github.com/user-attachments/assets/35718871-ff8f-4600-871c-d6472c0efcbb" />
+<img width="2518" height="1454" alt="subsystem1_classification" src="docs/classification_uml.png" />
 
 ### Subsystem 2: Recycling Rules & Sustainability Coach
-<img width="2647" height="1302" alt="image" src="https://github.com/user-attachments/assets/7df4510d-e967-4cb3-a940-d66de7a39f5b" />
+<img width="2610" height="1190" alt="subsystem2_rules_coach" src="https://github.com/user-attachments/assets/0df89cd5-967f-4927-ad37-d50e89047f5b" />
 
 ### Subsystem 3: Statistics Dashboard
-<img width="2646" height="1263" alt="image" src="https://github.com/user-attachments/assets/1ad3434c-63cb-4623-a3e1-5ce4e7cbdb33" />
+<img width="2160" height="930" alt="subsystem3_statistics" src="docs/statistics_uml.png" />
 
 ## How to run
 

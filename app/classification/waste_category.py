@@ -1,6 +1,7 @@
 from enum import Enum
 
-class WasteCategory(Enum):
+class WasteCategory(str, Enum):
+
     PACKAGING = "packaging"
     PAPER = "paper"
     GLASS = "glass"

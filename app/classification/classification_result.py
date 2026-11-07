@@ -1,5 +1,7 @@
 
+
 from datetime import datetime
+from .waste_category import WasteCategory
 
 
 class ClassificationResult:
@@ -38,9 +40,15 @@ class ClassificationResult:
 
     @category.setter
     def category(self, value):
-        if value not in ["packaging", "paper", "glass",
-                         "organic", "residual", "hazardous"]:
+        if isinstance(value, str):
+            try:
+                value = WasteCategory(value.strip().lower())
+            except ValueError:
+                raise ValueError("Invalid waste category")
+
+        if not isinstance(value, WasteCategory):
             raise ValueError("Invalid waste category")
+
         self._category = value
 
     @property
