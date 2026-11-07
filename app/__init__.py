@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
 from app.classification.classification_repository import ClassificationRepository
+from app.classification.errors import ClassificationError
 from app.errors import AppError
 from app.rules_coach.errors import RulesCoachError
 from app.rules_coach.rule_repository import RuleRepository
@@ -57,10 +58,15 @@ def create_app():
     def classify_page():
         return app.send_static_file("classify.html")
 
+    
     @app.route("/api/classifications")
     def api_classifications():
-        records = app.config["CLASSIFICATION_REPOSITORY"].get_recent(10)
-        return jsonify(records)
+        try:
+            records = app.config["CLASSIFICATION_REPOSITORY"].get_recent(10)
+            return jsonify(records)
+        except sqlite3.Error as error:
+            raise ClassificationError("Could not load classifications.", 500) from error
+
 
     @app.route("/dashboard")
     def dashboard_page():
