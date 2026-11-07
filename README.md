@@ -15,7 +15,7 @@ A web app that classifies waste from a photo or text with OpenAI and shows the c
 ## System Design
 
 ### Subsystem 1: Waste Classification
-<img width="2518" height="1454" alt="image" src="https://github.com/user-attachments/assets/35718871-ff8f-4600-871c-d6472c0efcbb" />
+<img width="2518" height="1454" alt="subsystem1_classification" src="docs/classification_uml.png" />
 
 ### Subsystem 2: Recycling Rules & Sustainability Coach
 <img width="2610" height="1190" alt="subsystem2_rules_coach" src="https://github.com/user-attachments/assets/0df89cd5-967f-4927-ad37-d50e89047f5b" />
