@@ -25,3 +25,7 @@ A web app that classifies waste from a photo or text with OpenAI and shows the c
 
 ### Subsystem 3: Statistics Dashboard
 <img width="2160" height="930" alt="subsystem3_statistics" src="docs/statistics_uml.png" />
+
+## Presentation Video
+
+[Watch the team presentation](https://drive.google.com/file/d/1Zot8zXZC9M68vjJt7e6PH3g3RvpS1ngQ/view?usp=sharing)
