@@ -1,8 +1,9 @@
 
 import pytest
+import sqlite3
 
 from app.classification.classification_service import ClassificationService
-from app.classification.errors import ClassificationError
+
 
 
 class FakeOpenAIClient:
@@ -61,17 +62,20 @@ def test_classify_rejects_empty_image():
         service.classify_image(b"", "Dortmund")
 
 
-# Test 5: Check JSON error response
-def test_classification_error_returns_json(client):
-    def test_error_route():
-        raise ClassificationError("Classification failed", 404)
 
-    client.application.add_url_rule(
-        "/test-classification-error",
-        view_func=test_error_route
-    )
+# Test 5: Check JSON error response when database fails
+def test_classification_error_returns_json(client, monkeypatch):
+    repository = client.application.config["CLASSIFICATION_REPOSITORY"]
 
-    response = client.get("/test-classification-error")
+    def fake_database_error(limit):
+        raise sqlite3.OperationalError("Database unavailable")
 
-    assert response.status_code == 404
-    assert response.get_json() == {"error": "Classification failed"}
+    monkeypatch.setattr(repository, "get_recent", fake_database_error)
+
+    response = client.get("/api/classifications")
+
+    assert response.status_code == 500
+    assert response.get_json() == {
+        "error": "Could not load classifications."
+    }
+
