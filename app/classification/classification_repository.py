@@ -59,6 +59,23 @@ class ClassificationRepository:
 
         return [dict(row) for row in rows]
 
+    
+    def update_feedback(self, classification_id, is_correct):
+        """Update Correct/Wrong feedback for a saved classification."""
+
+        if not isinstance(is_correct, bool):
+            raise ValueError("Feedback must be True or False")
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute("""
+                UPDATE classification
+                SET is_correct = ?
+                WHERE id = ?
+            """, (int(is_correct), classification_id))
+
+            return cursor.rowcount > 0
+
+    
     def load_seed(self):
         """Insert demo classifications if the table is empty."""
 
