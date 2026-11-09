@@ -6,10 +6,13 @@ from flask import Flask, jsonify, request
 
 from app.classification.classification_repository import ClassificationRepository
 from app.classification.errors import ClassificationError
+from app.demo_ai_client import DemoAIClient
 from app.errors import AppError
+from app.openai_client import OpenAIClient
 from app.rules_coach.errors import RulesCoachError
 from app.rules_coach.rule_repository import RuleRepository
 from app.rules_coach.rule_service import RuleService
+from app.rules_coach.sustainability_coach import SustainabilityCoach
 from app.statistics.errors import StatisticsError
 from app.statistics.statistics_service import StatisticsService
 
@@ -24,6 +27,12 @@ def create_app():
     repository.init_db()
     repository.load_seed("data/rules.csv")
     app.config["RULE_SERVICE"] = RuleService(repository)
+    if os.getenv("OPENAI_API_KEY"):
+        ai_client = OpenAIClient()
+    else:
+        ai_client = DemoAIClient()
+    app.config["AI_CLIENT"] = ai_client
+    app.config["COACH"] = SustainabilityCoach(ai_client, app.config["RULE_SERVICE"])
 
     classification_repo = ClassificationRepository(db_path)
     classification_repo.init_db()
@@ -54,11 +63,25 @@ def create_app():
             raise RulesCoachError(f"No rules found for {region}", 404)
         return jsonify([rule.to_dict() for rule in rules])
 
+    @app.route("/api/coach", methods=["POST"])
+    def api_coach():
+        data = request.get_json(silent=True) or {}
+        question = (data.get("question") or "").strip()
+        region = data.get("region", "Dortmund")
+        if not question:
+            raise RulesCoachError("Please type a question.", 400)
+        try:
+            answer = app.config["COACH"].ask(question, region)
+        except Exception as error:
+            raise RulesCoachError(
+                "The coach is not available right now.", 503
+            ) from error
+        return jsonify({"answer": answer})
+
     @app.route("/classify")
     def classify_page():
         return app.send_static_file("classify.html")
 
-    
     @app.route("/api/classifications")
     def api_classifications():
         try:
@@ -66,7 +89,6 @@ def create_app():
             return jsonify(records)
         except sqlite3.Error as error:
             raise ClassificationError("Could not load classifications.", 500) from error
-
 
     @app.route("/dashboard")
     def dashboard_page():
