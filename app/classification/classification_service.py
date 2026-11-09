@@ -51,32 +51,81 @@ class ClassificationService:
         ai_result = self.ai_client.analyze_text(text)
         return self._create_result(ai_result, region, "text")
 
+ 
     def _create_result(self, ai_result, region, input_type):
-        category = ai_result["category"]
+        if not isinstance(ai_result, dict):
+            raise ValueError("Not recognised, please try again")
+
+        category = ai_result.get("category")
+        item_name = ai_result.get("item_name")
+        explanation = ai_result.get("explanation", "")
+
+        if (
+            not isinstance(category, str)
+            or category.strip().lower() not in {
+                "packaging", "paper", "glass",
+                "organic", "residual", "hazardous"
+            }
+            or not isinstance(item_name, str)
+            or not item_name.strip()
+        ):
+            raise ValueError("Not recognised, please try again")
+
+        category = category.strip().lower()
+
         bin_name = ""
+        bin_color = ""
+        tip = ""
 
         if self.rule_service is not None:
             rule = self.rule_service.get_rule(category, region)
 
             if rule is not None:
                 bin_name = rule.bin_name
+                bin_color = rule.bin_color
+                tip = rule.instructions
 
         result = ClassificationResult(
             id=None,
-            item_name=ai_result["item_name"],
+            item_name=item_name,
             category=category,
             region=region,
             bin_name=bin_name,
-            explanation=ai_result["explanation"],
+            explanation=explanation,
             input_type=input_type
         )
 
+        result.bin_color = bin_color
+        result.tip = tip
+
+        if self.repository is not None:
+            result._id = self.repository.add(
+                item_name=result.item_name,
+                category=result.category.value,
+                region=result.region,
+                bin_name=result.bin_name,
+                explanation=result.explanation,
+                input_type=result.input_type
+            )
+
         return result
 
-    
     def save_feedback(self, result, is_correct):
         """Store user feedback on a classification result."""
+
+        if not isinstance(is_correct, bool):
+            raise ValueError("Feedback must be True or False")
+
+        if self.repository is None or result.id is None:
+            raise ValueError("Classification is not saved")
+
+        updated = self.repository.update_feedback(
+            result.id, is_correct
+        )
+
+        if not updated:
+            raise ValueError("Classification not found")
+
         result.is_correct = is_correct
         return result
-
 
