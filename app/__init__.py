@@ -103,6 +103,94 @@ def create_app():
         except sqlite3.Error as error:
             raise ClassificationError("Could not load classifications.", 500) from error
 
+    
+    @app.route("/api/classify", methods=["POST"])
+    def api_classify():
+        """Classify waste from text or an uploaded image."""
+
+        data = request.get_json(silent=True) if request.is_json else request.form
+        data = data or {}
+
+        region = (data.get("region") or "").strip()
+        text = (data.get("text") or "").strip()
+        image = request.files.get("image")
+
+        if region not in app.config["RULE_SERVICE"].get_regions():
+            raise ClassificationError("Please select a valid city.", 400)
+
+        
+        if image is not None and text:
+            raise ClassificationError(
+                "Please provide either text or an image.", 400
+            )
+
+        if image is None and not text:
+            raise ClassificationError(
+                "Please enter an item or upload an image.", 400
+            )
+
+
+        service = app.config["CLASSIFICATION_SERVICE"]
+
+        try:
+            if image is not None:
+                filename = image.filename or ""
+                extension = os.path.splitext(filename)[1].lower()
+
+                if extension not in (".jpg", ".jpeg", ".png"):
+                    raise ClassificationError(
+                        "Only JPG and PNG images are supported.", 400
+                    )
+
+                image_data = image.read(5 * 1024 * 1024 + 1)
+
+                if len(image_data) > 5 * 1024 * 1024:
+                    raise ClassificationError(
+                        "Image must not exceed 5 MB.", 413
+                    )
+
+                is_jpeg = image_data.startswith(b"\xff\xd8\xff")
+                is_png = image_data.startswith(b"\x89PNG\r\n\x1a\n")
+
+                if not (
+                    (extension in (".jpg", ".jpeg") and is_jpeg)
+                    or (extension == ".png" and is_png)
+                ):
+                    raise ClassificationError(
+                        "Invalid JPG or PNG image.", 400
+                    )
+
+                result = service.classify_image(image_data, region)
+
+            else:
+                result = service.classify_text(text, region)
+
+            return jsonify({
+                "id": result.id,
+                "item_name": result.item_name,
+                "category": result.category.value,
+                "region": result.region,
+                "bin_name": result.bin_name,
+                "bin_color": result.bin_color,
+                "tip": result.tip,
+                "explanation": result.explanation,
+                "input_type": result.input_type,
+                "is_correct": result.is_correct
+            }), 201
+
+        except ClassificationError:
+            raise
+        except ValueError as error:
+            raise ClassificationError(str(error), 400) from error
+        except sqlite3.Error as error:
+            raise ClassificationError(
+                "Could not save classification.", 500
+            ) from error
+        except Exception as error:
+            raise ClassificationError(
+                "Classification service is unavailable.", 503
+            ) from error
+
     @app.route("/dashboard")
     def dashboard_page():
         return app.send_static_file("dashboard.html")
