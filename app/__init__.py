@@ -191,6 +191,47 @@ def create_app():
                 "Classification service is unavailable.", 503
             ) from error
 
+        
+    @app.route("/api/classifications/<int:classification_id>/feedback",
+               methods=["POST"])
+    def api_classification_feedback(classification_id):
+        """Save Correct/Wrong feedback for a classification."""
+
+        data = request.get_json(silent=True)
+
+        if not isinstance(data, dict) or not isinstance(
+            data.get("is_correct"), bool
+        ):
+            raise ClassificationError(
+                "Feedback must be true or false.", 400
+            )
+
+        try:
+            updated = app.config[
+                "CLASSIFICATION_REPOSITORY"
+            ].update_feedback(
+                classification_id,
+                data["is_correct"]
+            )
+
+            if not updated:
+                raise ClassificationError(
+                    "Classification not found.", 404
+                )
+
+            return jsonify({
+                "id": classification_id,
+                "is_correct": data["is_correct"],
+                "message": "Feedback saved successfully."
+            }), 200
+
+        except ClassificationError:
+            raise
+        except sqlite3.Error as error:
+            raise ClassificationError(
+                "Could not save feedback.", 500
+            ) from error
+
     @app.route("/dashboard")
     def dashboard_page():
         return app.send_static_file("dashboard.html")
