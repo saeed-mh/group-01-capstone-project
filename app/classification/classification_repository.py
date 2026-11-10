@@ -110,7 +110,7 @@ class ClassificationRepository:
              "image", None),
 
             ("Battery", "hazardous", "Dortmund",
-             "Collection Point", "Hazardous waste",
+             "Wertstoffhof / Schadstoffmobil", "Hazardous waste",
              "text", None)
         ]
 
