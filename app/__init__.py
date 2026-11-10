@@ -1,6 +1,8 @@
 import os
 import sqlite3
 from io import BytesIO
+from werkzeug.exceptions import RequestEntityTooLarge
+
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
@@ -55,6 +57,13 @@ def create_app():
     @app.errorhandler(AppError)
     def handle_app_error(error):
         return jsonify(error.to_dict()), error.status_code
+
+    
+    @app.errorhandler(RequestEntityTooLarge)
+    def handle_large_request(error):
+        return jsonify({
+            "error": "Request too large. Image must not exceed 5 MB."
+        }), 413
 
     @app.route("/")
     def home():
