@@ -10,7 +10,7 @@ class ClassificationResult:
     def __init__(self, id, item_name, category, region, bin_name,
                  explanation, input_type, is_correct=None):
 
-        self._id = id
+        self.id = id
         self.item_name = item_name
         self.category = category
         self.region = region
