@@ -1,14 +1,13 @@
-
-
-import os
-import json
 import base64
-from openai import OpenAI
+import json
+import os
+
 from dotenv import load_dotenv
+from openai import OpenAI
 
 
 class OpenAIClient:
-    """Handles communication with the OpenAI API."""
+    """Handles communication with an OpenAI-compatible API (OpenAI or Gemini)."""
 
     def __init__(self, api_key=None, model=None):
         load_dotenv()
@@ -45,28 +44,25 @@ class OpenAIClient:
         if not self.api_key:
             raise ValueError("OpenAI API key is missing")
 
-        self._client = OpenAI(api_key=self.api_key)
+        self._client = OpenAI(
+            api_key=self.api_key, base_url=os.getenv("OPENAI_BASE_URL")
+        )
 
     def chat(self, prompt):
         if self._client is None:
             self.initialize()
 
-        response = self._client.responses.create(
-            model=self.model,
-            input=prompt
+        response = self._client.chat.completions.create(
+            model=self.model, messages=[{"role": "user", "content": prompt}]
         )
+        return response.choices[0].message.content
 
-        return response.output_text
-
-   
     def analyze_text(self, text):
         prompt = self._classification_prompt() + text
         answer = self.chat(prompt)
 
         return self._parse_classification(answer)
 
-
-   
     def analyze_image(self, image):
         if not image:
             raise ValueError("Image cannot be empty")
@@ -83,33 +79,36 @@ class OpenAIClient:
 
         encoded_image = base64.b64encode(image).decode("utf-8")
 
-        response = self._client.responses.create(
+        response = self._client.chat.completions.create(
             model=self.model,
-            input=[
+            messages=[
                 {
                     "role": "user",
                     "content": [
+                        {"type": "text", "text": self._classification_prompt()},
                         {
-                            "type": "input_text",
-                            "text": self._classification_prompt()
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{mime_type};base64,{encoded_image}"
+                            },
                         },
-                        {
-                            "type": "input_image",
-                            "image_url": (
-                                f"data:{mime_type};base64,"
-                                + encoded_image
-                            )
-                        }
-                    ]
+                    ],
                 }
-            ]
+            ],
         )
 
-        return self._parse_classification(response.output_text)
+        return self._parse_classification(response.choices[0].message.content)
 
-    
     def _parse_classification(self, answer):
         """Parse and validate the AI classification response."""
+        if isinstance(answer, str):
+            answer = (
+                answer.strip()
+                .removeprefix("```json")
+                .removeprefix("```")
+                .removesuffix("```")
+                .strip()
+            )
 
         try:
             result = json.loads(answer)
@@ -126,8 +125,6 @@ class OpenAIClient:
 
         return result
 
-
-   
     def _classification_prompt(self):
         return (
             "Identify this waste item. "
