@@ -87,31 +87,33 @@ class ClassificationRepository:
         if count > 0:
             return
 
+        
         demo_data = [
             ("Plastic bottle", "packaging", "Dortmund",
-             "Yellow Bin", "Plastic packaging",
+             "Gelbe Tonne", "Plastic packaging",
              "text", True),
 
             ("Newspaper", "paper", "Dortmund",
-             "Blue Bin", "Paper waste",
+             "Blaue Tonne", "Paper waste",
              "text", True),
 
             ("Glass bottle", "glass", "Dortmund",
-             "Glass Container", "Glass waste",
+             "Glascontainer", "Glass waste",
              "image", True),
 
             ("Banana peel", "organic", "Dortmund",
-             "Brown Bin", "Organic food waste",
+             "Biotonne", "Organic food waste",
              "text", True),
 
             ("Used tissue", "residual", "Dortmund",
-             "Black Bin", "Residual waste",
+             "Graue Tonne", "Residual waste",
              "image", None),
 
             ("Battery", "hazardous", "Dortmund",
              "Collection Point", "Hazardous waste",
              "text", None)
         ]
+
 
         for item in demo_data:
             self.add(*item)
