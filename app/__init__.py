@@ -6,6 +6,9 @@ from flask import Flask, jsonify, request
 
 from app.classification.classification_repository import ClassificationRepository
 from app.classification.errors import ClassificationError
+
+from app.classification.classification_service import ClassificationService
+
 from app.demo_ai_client import DemoAIClient
 from app.errors import AppError
 from app.openai_client import OpenAIClient
@@ -38,6 +41,16 @@ def create_app():
     classification_repo.init_db()
     classification_repo.load_seed()
     app.config["CLASSIFICATION_REPOSITORY"] = classification_repo
+
+    
+    classification_service = ClassificationService(
+        ai_client=ai_client,
+        rule_service=app.config["RULE_SERVICE"],
+        repository=classification_repo
+    )
+
+    app.config["CLASSIFICATION_SERVICE"] = classification_service
+
 
     @app.errorhandler(AppError)
     def handle_app_error(error):
