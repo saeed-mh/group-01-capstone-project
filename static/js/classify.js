@@ -171,26 +171,18 @@ async function classifyWaste(event) {
         const binElement = document.getElementById("result-bin");
         binElement.textContent = data.bin_name || "No bin information";
 
-        // Show the bin in its assigned colour.
-        const binColors = {
-            yellow: "#d4a900",
-            blue: "#1769aa",
-            brown: "#8b5a2b",
-            green: "#268347",
-            black: "#333333",
-            grey: "#666666",
-            gray: "#666666",
-            white: "#666666",
-            red: "#ba3030",
-            orange: "#c66a00"
-        };
+        // Show the bin using the colour from RuleService.
+        const color = String(data.bin_color || "").trim();
 
-        const color = String(data.bin_color || "")
-            .trim()
-            .toLowerCase();
+        if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+            binElement.style.color = color;
+        } else {
+            binElement.style.color = "";
+        }
 
-        binElement.style.color = binColors[color] || "";
         binElement.style.fontWeight = "bold";
+
+
 
         document.getElementById("feedback-message").textContent = "";
         document.getElementById("feedback-correct").disabled = false;
