@@ -164,6 +164,31 @@ def create_app():
                         "Invalid JPG or PNG image.", 400
                     )
 
+                
+                # Verify that the image is genuine and readable.
+                try:
+                    with Image.open(BytesIO(image_data)) as img:
+                        expected_format = (
+                            "JPEG" if is_jpeg else "PNG"
+                        )
+
+                        if img.format != expected_format:
+                            raise ClassificationError(
+                                "Invalid JPG or PNG image.", 400
+                            )
+
+                        img.verify()
+
+                    # Decode the image to detect corrupt image data.
+                    with Image.open(BytesIO(image_data)) as img:
+                        img.load()
+
+                except (UnidentifiedImageError, OSError, ValueError,
+                        Image.DecompressionBombError) as error:
+                    raise ClassificationError(
+                        "Invalid or corrupted image.", 400
+                    ) from error
+
                 result = service.classify_image(image_data, region)
 
             else:
