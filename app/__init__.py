@@ -93,6 +93,15 @@ def create_app():
             ) from error
         return jsonify({"answer": answer})
 
+    @app.route("/api/tip")
+    def api_tip():
+        region = request.args.get("region", "Dortmund")
+        try:
+            tip = app.config["COACH"].tip_of_the_day(region)
+        except Exception as error:
+            raise RulesCoachError("The tip is not available right now.", 503) from error
+        return jsonify({"tip": tip})
+
     @app.route("/classify")
     def classify_page():
         return app.send_static_file("classify.html")

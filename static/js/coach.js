@@ -11,7 +11,16 @@ async function loadRegions() {
   }
 }
 
-loadRegions();
+async function loadTip() {
+  const region = document.getElementById("region").value;
+  const tip = document.getElementById("tip");
+
+  tip.textContent = "Loading tip...";
+  const response = await fetch(`/api/tip?region=${encodeURIComponent(region)}`);
+  const data = await response.json();
+
+  tip.textContent = response.ok ? data.tip : data.error;
+}
 
 async function askCoach() {
   const question = document.getElementById("question").value;
@@ -35,3 +44,6 @@ async function askCoach() {
 }
 
 document.getElementById("ask-button").addEventListener("click", askCoach);
+
+loadRegions().then(loadTip);
+document.getElementById("region").addEventListener("change", loadTip);

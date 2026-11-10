@@ -17,12 +17,19 @@
 
     <h1>Sustainability Coach</h1>
     <p>Ask a question about recycling in your city.</p>
+    <div class="tip">
+        <strong class="tip-title">Tip of the day</strong>
+        <p id="tip"></p>
+    </div>
 
-    <label for="region">City:</label>
-    <select id="region"></select>
 
-    <input type="text" id="question" placeholder="e.g. Where do batteries go?">
-    <button id="ask-button">Ask</button>
+    <div class="ask-row">
+        <label for="region">City:</label>
+        <select id="region"></select>
+        <input type="text" id="question" placeholder="e.g. Where do batteries go?">
+        <button id="ask-button">Ask</button>
+    </div>
+
 
     <p id="answer"></p>
 

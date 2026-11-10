@@ -1,3 +1,5 @@
+import random
+
 from app.rules_coach.rule_service import RuleService
 
 
@@ -32,11 +34,15 @@ class SustainabilityCoach:
         return self.openai_client.chat(prompt)
 
     def tip_of_the_day(self, region):
-        """Ask OpenAI for one short, practical recycling tip for this city."""
+        """Ask the AI for one short tip about a random waste category of this city."""
+        rules = self.rule_service.get_rules(region)
+        if not rules:
+            raise ValueError(f"No rules found for {region}")
+        rule = random.choice(rules)
         prompt = (
             f"{self._build_prompt(region)}\n\n"
-            "Give one short, practical recycling tip of the day for this city, "
-            "in one sentence."
+            f"Give one short, practical recycling tip for this city "
+            f"about {rule.category} ({rule.bin_name}), in one sentence."
         )
         return self.openai_client.chat(prompt)
 
