@@ -74,6 +74,10 @@ def create_app():
             raise RulesCoachError(f"No rules found for {region}", 404)
         return jsonify([rule.to_dict() for rule in rules])
 
+    @app.route("/coach")
+    def coach_page():
+        return app.send_static_file("coach.html")
+
     @app.route("/api/coach", methods=["POST"])
     def api_coach():
         data = request.get_json(silent=True) or {}

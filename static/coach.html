@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustainability Coach</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/classify">Classify</a>
+        <a href="/bins">Bins Guide</a>
+        <a href="/coach">Coach</a>
+        <a href="/dashboard">Dashboard</a>
+    </nav>
+
+    <h1>Sustainability Coach</h1>
+    <p>Ask a question about recycling in your city.</p>
+
+    <label for="region">City:</label>
+    <select id="region"></select>
+
+    <input type="text" id="question" placeholder="e.g. Where do batteries go?">
+    <button id="ask-button">Ask</button>
+
+    <p id="answer"></p>
+
+    <script src="/static/js/coach.js"></script>
+</body>
+</html>
