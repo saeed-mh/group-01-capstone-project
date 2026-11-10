@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classification History</title>
+    <title>Waste Classification</title>
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
@@ -14,8 +14,75 @@
         <a href="/bins">Bins Guide</a>
         <a href="/dashboard">Dashboard</a>
     </nav>
-    <h1>Waste Classification History</h1>
+    <h1>Waste Classification</h1>
 
+    
+    <section>
+        <h2>Classify Your Waste</h2>
+        <p>Enter an item name or upload a photo to find the correct bin.</p>
+
+        <form id="classification-form">
+            <label for="region">Choose your city:</label>
+            <select id="region" name="region" required>
+                <option value="">Select a city</option>
+            </select>
+
+            <p>
+                <label for="item-text">Waste item:</label>
+                <input
+                    type="text"
+                    id="item-text"
+                    name="text"
+                    placeholder="e.g. Plastic bottle"
+                >
+            </p>
+
+            <p>OR</p>
+
+            <p>
+                <label for="item-image">Upload a photo (JPG/PNG, max 5 MB):</label>
+                <input
+                    type="file"
+                    id="item-image"
+                    name="image"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                >
+            </p>
+
+            <button type="submit" id="classify-button">
+                Classify Waste
+            </button>
+        </form>
+
+        <p id="classification-message" role="status"></p>
+    </section>
+
+    <section id="classification-result" hidden>
+        <h2>Classification Result</h2>
+
+        <p><strong>Item:</strong> <span id="result-item"></span></p>
+        <p><strong>Category:</strong> <span id="result-category"></span></p>
+        <p>
+            <strong>Bin:</strong>
+            <span id="result-bin"></span>
+        </p>
+        <p><strong>Recycling Tip:</strong> <span id="result-tip"></span></p>
+        <p>
+            <strong>Explanation:</strong>
+            <span id="result-explanation"></span>
+        </p>
+
+        <div id="feedback-section">
+            <p>Was this classification correct?</p>
+            <button type="button" id="feedback-correct">Correct</button>
+            <button type="button" id="feedback-wrong">Wrong</button>
+            <p id="feedback-message" role="status"></p>
+        </div>
+    </section>
+
+    <hr>
+
+    <h2>Classification History</h2>
     <p>Latest 10 waste classifications</p>
 
     <table border="1" cellpadding="8">
