@@ -24,7 +24,9 @@ def create_app():
     """Create and configure the Flask app."""
     load_dotenv()
     app = Flask(__name__, static_folder="../static")
+    app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
 
+    
     db_path = os.getenv("DATABASE_PATH", "data/app.db")
     repository = RuleRepository(db_path)
     repository.init_db()
