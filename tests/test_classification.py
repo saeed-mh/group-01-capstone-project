@@ -1,6 +1,7 @@
 
 import pytest
 import sqlite3
+from io import BytesIO
 
 from app.classification.classification_service import ClassificationService
 
@@ -78,4 +79,247 @@ def test_classification_error_returns_json(client, monkeypatch):
     assert response.get_json() == {
         "error": "Could not load classifications."
     }
+
+
+# Final Capstone Project - Subsystem 1 Tests
+
+
+# Test 6: Successful text classification through Flask API
+def test_api_classify_text(client, monkeypatch):
+    service = client.application.config["CLASSIFICATION_SERVICE"]
+    monkeypatch.setattr(service, "ai_client", FakeOpenAIClient())
+
+    response = client.post("/api/classify", data={
+        "region": "Dortmund",
+        "text": "Newspaper"
+    })
+
+    assert response.status_code == 201
+
+    data = response.get_json()
+
+    assert data["item_name"] == "Newspaper"
+    assert data["category"] == "paper"
+    assert data["region"] == "Dortmund"
+    assert data["input_type"] == "text"
+    assert data["id"] is not None
+    assert data["bin_name"]
+    assert data["bin_color"]
+    assert data["tip"]
+
+
+# Test 7: Classification is saved in the database
+def test_api_classification_saved(client, monkeypatch):
+    service = client.application.config["CLASSIFICATION_SERVICE"]
+    monkeypatch.setattr(service, "ai_client", FakeOpenAIClient())
+
+    response = client.post("/api/classify", data={
+        "region": "Dortmund",
+        "text": "Newspaper"
+    })
+
+    assert response.status_code == 201
+
+    classification_id = response.get_json()["id"]
+
+    repository = client.application.config[
+        "CLASSIFICATION_REPOSITORY"
+    ]
+
+    records = repository.get_recent(20)
+
+    assert any(
+        record["id"] == classification_id
+        and record["item_name"] == "Newspaper"
+        for record in records
+    )
+
+
+# Test 8: Reject missing classification input
+def test_api_classify_missing_input(client):
+    response = client.post("/api/classify", data={
+        "region": "Dortmund"
+    })
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+# Test 9: Reject text and image provided together
+def test_api_classify_both_inputs(client):
+    response = client.post("/api/classify", data={
+        "region": "Dortmund",
+        "text": "Newspaper",
+        "image": (BytesIO(b"fake image"), "photo.jpg")
+    })
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+# Test 10: Reject invalid city
+def test_api_classify_invalid_city(client):
+    response = client.post("/api/classify", data={
+        "region": "InvalidCity123",
+        "text": "Newspaper"
+    })
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+# Test 11: Reject unsupported image format
+def test_api_classify_invalid_image_type(client):
+    response = client.post("/api/classify", data={
+        "region": "Dortmund",
+        "image": (BytesIO(b"fake image"), "photo.gif")
+    })
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+# Test 12: Reject images larger than 5 MB
+def test_api_classify_large_image(client):
+    large_image = b"\xff\xd8\xff" + b"0" * (
+        5 * 1024 * 1024
+    )
+
+    response = client.post("/api/classify", data={
+        "region": "Dortmund",
+        "image": (BytesIO(large_image), "large.jpg")
+    })
+
+    assert response.status_code == 413
+    assert "error" in response.get_json()
+
+
+# Test 13: Successful JPG upload
+def test_api_classify_jpg(client, monkeypatch):
+    service = client.application.config["CLASSIFICATION_SERVICE"]
+    monkeypatch.setattr(service, "ai_client", FakeOpenAIClient())
+
+    image = b"\xff\xd8\xff" + b"fake jpg content"
+
+    response = client.post("/api/classify", data={
+        "region": "Dortmund",
+        "image": (BytesIO(image), "photo.jpg")
+    })
+
+    assert response.status_code == 201
+
+    data = response.get_json()
+
+    assert data["category"] == "glass"
+    assert data["input_type"] == "image"
+    assert data["id"] is not None
+
+
+# Test 14: Successful PNG upload
+def test_api_classify_png(client, monkeypatch):
+    service = client.application.config["CLASSIFICATION_SERVICE"]
+    monkeypatch.setattr(service, "ai_client", FakeOpenAIClient())
+
+    image = b"\x89PNG\r\n\x1a\n" + b"fake png content"
+
+    response = client.post("/api/classify", data={
+        "region": "Dortmund",
+        "image": (BytesIO(image), "photo.png")
+    })
+
+    assert response.status_code == 201
+    assert response.get_json()["input_type"] == "image"
+
+
+# Test 15: Correct feedback is saved
+def test_api_feedback_correct(client):
+    repository = client.application.config[
+        "CLASSIFICATION_REPOSITORY"
+    ]
+
+    classification_id = repository.add(
+        "Newspaper", "paper", "Dortmund",
+        "Blue Bin", "Paper recycling", "text"
+    )
+
+    response = client.post(
+        f"/api/classifications/{classification_id}/feedback",
+        json={"is_correct": True}
+    )
+
+    assert response.status_code == 200
+
+    with sqlite3.connect(repository.db_path) as conn:
+        value = conn.execute(
+            "SELECT is_correct FROM classification WHERE id = ?",
+            (classification_id,)
+        ).fetchone()[0]
+
+    assert value == 1
+
+
+# Test 16: Wrong feedback is saved
+def test_api_feedback_wrong(client):
+    repository = client.application.config[
+        "CLASSIFICATION_REPOSITORY"
+    ]
+
+    classification_id = repository.add(
+        "Newspaper", "paper", "Dortmund",
+        "Blue Bin", "Paper recycling", "text"
+    )
+
+    response = client.post(
+        f"/api/classifications/{classification_id}/feedback",
+        json={"is_correct": False}
+    )
+
+    assert response.status_code == 200
+
+    with sqlite3.connect(repository.db_path) as conn:
+        value = conn.execute(
+            "SELECT is_correct FROM classification WHERE id = ?",
+            (classification_id,)
+        ).fetchone()[0]
+
+    assert value == 0
+
+
+# Test 17: Reject invalid feedback
+def test_api_feedback_invalid(client):
+    response = client.post(
+        "/api/classifications/1/feedback",
+        json={"is_correct": "yes"}
+    )
+
+    assert response.status_code == 400
+
+
+# Test 18: Reject feedback for nonexistent classification
+def test_api_feedback_not_found(client):
+    response = client.post(
+        "/api/classifications/999999/feedback",
+        json={"is_correct": True}
+    )
+
+    assert response.status_code == 404
+
+
+# Test 19: Reject unrecognised classification
+def test_unrecognised_item():
+    class UnknownAIClient:
+        def analyze_text(self, text):
+            return {
+                "item_name": text,
+                "category": "unknown",
+                "explanation": "Item not recognised."
+            }
+
+    service = ClassificationService(UnknownAIClient())
+
+    with pytest.raises(
+        ValueError,
+        match="Not recognised, please try again"
+    ):
+        service.classify_text("Unknown object", "Dortmund")
 
