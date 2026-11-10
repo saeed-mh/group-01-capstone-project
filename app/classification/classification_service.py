@@ -99,7 +99,7 @@ class ClassificationService:
         result.tip = tip
 
         if self.repository is not None:
-            result._id = self.repository.add(
+            result.id = self.repository.add(
                 item_name=result.item_name,
                 category=result.category.value,
                 region=result.region,
