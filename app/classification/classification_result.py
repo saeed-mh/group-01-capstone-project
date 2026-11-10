@@ -20,9 +20,16 @@ class ClassificationResult:
         self.is_correct = is_correct
         self._created_at = datetime.now()
 
+    
     @property
     def id(self):
         return self._id
+
+    @id.setter
+    def id(self, value):
+        if value is not None and (type(value) is not int or value <= 0):
+            raise ValueError("ID must be a positive integer or None")
+        self._id = value
 
     @property
     def item_name(self):
