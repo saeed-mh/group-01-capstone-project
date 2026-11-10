@@ -45,7 +45,7 @@ class DemoAIClient:
         }
 
     def analyze_image(self, image):
-        """Image classification requires an OpenAI API key."""
+        """Image classification requires an API key."""
         raise ValueError(
             "Image classification requires an OpenAI API key."
         )
