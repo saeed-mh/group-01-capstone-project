@@ -1,6 +1,10 @@
 import os
 import sqlite3
 
+
+from io import BytesIO
+from PIL import Image, UnidentifiedImageError
+
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
