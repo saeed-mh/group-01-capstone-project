@@ -1,6 +1,8 @@
 
 import pytest
 import sqlite3
+
+from PIL import Image
 from io import BytesIO
 
 from app.classification.classification_service import ClassificationService
@@ -23,7 +25,14 @@ class FakeOpenAIClient:
             "category": "glass",
             "explanation": "This belongs in glass recycling."
         }
-
+    
+             
+def create_test_image(image_format):
+    """Create a genuine small image for testing."""
+    image = Image.new("RGB", (10, 10), "white")
+    buffer = BytesIO()
+    image.save(buffer, format=image_format)
+    return buffer.getvalue()    
 
 # Test 1: Classify valid text
 def test_classify_valid_text():
@@ -199,7 +208,7 @@ def test_api_classify_jpg(client, monkeypatch):
     service = client.application.config["CLASSIFICATION_SERVICE"]
     monkeypatch.setattr(service, "ai_client", FakeOpenAIClient())
 
-    image = b"\xff\xd8\xff" + b"fake jpg content"
+    image = create_test_image("JPEG")
 
     response = client.post("/api/classify", data={
         "region": "Dortmund",
@@ -220,7 +229,7 @@ def test_api_classify_png(client, monkeypatch):
     service = client.application.config["CLASSIFICATION_SERVICE"]
     monkeypatch.setattr(service, "ai_client", FakeOpenAIClient())
 
-    image = b"\x89PNG\r\n\x1a\n" + b"fake png content"
+    image = create_test_image("PNG")
 
     response = client.post("/api/classify", data={
         "region": "Dortmund",
@@ -323,3 +332,15 @@ def test_unrecognised_item():
     ):
         service.classify_text("Unknown object", "Dortmund")
 
+
+# Test 20: Reject corrupted JPG image
+def test_api_classify_corrupted_image(client):
+    corrupted_image = b"\xff\xd8\xff" + b"invalid image data"
+
+    response = client.post("/api/classify", data={
+        "region": "Dortmund",
+        "image": (BytesIO(corrupted_image), "corrupted.jpg")
+    })
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
