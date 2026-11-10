@@ -64,10 +64,9 @@ th {
 
 .tip p {
     margin: 6px 0 0;
-    margin-bottom: 24px;
 }
 
-.ask-row {
+.form-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -75,21 +74,21 @@ th {
     gap: 8px;
 }
 
-.ask-row select,
-.ask-row input,
-.ask-row button {
+.form-row select,
+.form-row input,
+.form-row button {
     padding: 8px 12px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 6px;
 }
 
-.ask-row input {
+.form-row input {
     flex: 1;
     min-width: 200px;
 }
 
-.ask-row button {
+.form-row button {
     background: #2e7d32;
     color: white;
     border: none;
@@ -97,6 +96,6 @@ th {
     cursor: pointer;
 }
 
-.ask-row button:hover {
+.form-row button:hover {
     background: #1b5e20;
 }

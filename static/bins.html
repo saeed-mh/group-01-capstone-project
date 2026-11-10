@@ -17,10 +17,15 @@
 
     <h1>Bins Guide</h1>
 
-    <label for="region">City:</label>
-    <select id="region"></select>
+    <div class="form-row">
+        <label for="region">City:</label>
+        <select id="region"></select>
+        <input type="text" id="search" placeholder="Search an item, e.g. batteries">
+        <button id="search-button">Search</button>
+        <button id="clear-button">Show all</button>
+    </div>
 
-    <table border="1" cellpadding="8">
+    <table>
         <thead>
             <tr>
                 <th>Bin</th>

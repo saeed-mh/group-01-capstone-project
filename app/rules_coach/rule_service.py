@@ -39,14 +39,30 @@ class RuleService:
         """Return all cities that have rules, sorted A–Z."""
         return sorted({rule.region for rule in self.repository.get_all()})
 
+    def _normalize(self, text):
+        """Lowercase the text and turn plural words into singular (batteries -> battery)."""
+        words = []
+        for word in text.lower().replace(",", " ").split():
+            if word.endswith("ies"):
+                word = word[:-3] + "y"
+            elif word.endswith("s"):
+                word = word[:-1]
+            words.append(word)
+        return " ".join(words)
+
     def search(self, text, region):
         """Return all rules of this city whose category, bin or examples contain the text."""
-        text = text.lower().strip()
+        text = self._normalize(text)
+        if not text:
+            return []
+
         results = []
         for rule in self.repository.get_all():
             if rule.region.lower() != region.lower():
                 continue
-            searchable = f"{rule.category} {rule.bin_name} {rule.examples}".lower()
+            searchable = self._normalize(
+                f"{rule.category} {rule.bin_name} {rule.examples}"
+            )
             if text in searchable:
                 results.append(rule)
         return results

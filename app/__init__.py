@@ -1,12 +1,11 @@
 import os
 import sqlite3
 from io import BytesIO
-from werkzeug.exceptions import RequestEntityTooLarge
-
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from PIL import Image, UnidentifiedImageError
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from app.classification.classification_repository import ClassificationRepository
 from app.classification.classification_service import ClassificationService
@@ -28,7 +27,6 @@ def create_app():
     app = Flask(__name__, static_folder="../static")
     app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
 
-    
     db_path = os.getenv("DATABASE_PATH", "data/app.db")
     repository = RuleRepository(db_path)
     repository.init_db()
@@ -58,12 +56,9 @@ def create_app():
     def handle_app_error(error):
         return jsonify(error.to_dict()), error.status_code
 
-    
     @app.errorhandler(RequestEntityTooLarge)
     def handle_large_request(error):
-        return jsonify({
-            "error": "Request too large. Image must not exceed 5 MB."
-        }), 413
+        return jsonify({"error": "Request too large. Image must not exceed 5 MB."}), 413
 
     @app.route("/")
     def home():
@@ -83,6 +78,15 @@ def create_app():
         rules = app.config["RULE_SERVICE"].get_rules(region)
         if not rules:
             raise RulesCoachError(f"No rules found for {region}", 404)
+        return jsonify([rule.to_dict() for rule in rules])
+
+    @app.route("/api/search")
+    def api_search():
+        text = request.args.get("q", "").strip()
+        region = request.args.get("region", "Dortmund")
+        if not text:
+            raise RulesCoachError("Please type an item to search.", 400)
+        rules = app.config["RULE_SERVICE"].search(text, region)
         return jsonify([rule.to_dict() for rule in rules])
 
     @app.route("/coach")
