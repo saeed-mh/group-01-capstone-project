@@ -99,6 +99,10 @@ def create_app():
         rules = app.config["RULE_SERVICE"].search(text, region)
         return jsonify([rule.to_dict() for rule in rules])
 
+    @app.route("/admin")
+    def admin_page():
+        return app.send_static_file("admin.html")
+
     @app.route("/api/admin/login", methods=["POST"])
     def api_admin_login():
         check_admin()

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/classify">Classify</a>
+        <a href="/bins">Bins Guide</a>
+        <a href="/coach">Coach</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/admin">Admin</a>
+    </nav>
+
+    <h1>Admin: Recycling Rules</h1>
+    
+    <p id="message"></p>
+
+    <!-- 1. Login -->
+    <section id="login-section">
+        <div class="form-row">
+            <label for="password">Password:</label>
+            <input type="password" id="password">
+            <button id="login-button">Login</button>
+        </div>
+    </section>
+
+    <!-- 2. Only visible after login -->
+    <section id="admin-section" hidden>
+        <h2 id="form-title">Add a new rule</h2>
+        <form id="rule-form" class="rule-form">
+            <input type="hidden" id="rule-id">
+
+            <label for="rule-region">City</label>
+            <input type="text" id="rule-region" placeholder="e.g. Dortmund">
+
+            <label for="rule-category">Category</label>
+            <select id="rule-category">
+                <option value="packaging">packaging</option>
+                <option value="paper">paper</option>
+                <option value="glass">glass</option>
+                <option value="organic">organic</option>
+                <option value="residual">residual</option>
+                <option value="hazardous">hazardous</option>
+            </select>
+
+            <label for="rule-bin-name">Bin name</label>
+            <input type="text" id="rule-bin-name" placeholder="e.g. Gelbe Tonne">
+
+            <label for="rule-bin-color">Bin colour</label>
+            <input type="color" id="rule-bin-color" value="#2e7d32">
+
+            <label for="rule-instructions">Instructions</label>
+            <input type="text" id="rule-instructions" placeholder="e.g. Empty it, no need to wash.">
+
+            <label for="rule-examples">Examples</label>
+            <input type="text" id="rule-examples" placeholder="e.g. yogurt cup, tin can">
+
+            <div class="form-row">
+                <button type="submit" id="save-button">Save</button>
+                <button type="button" id="cancel-button">Cancel</button>
+            </div>
+        </form>
+
+        <h2>All rules</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>City</th>
+                    <th>Bin</th>
+                    <th>Category</th>
+                    <th>Instructions</th>
+                    <th>Examples</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="rules"></tbody>
+        </table>
+    </section>
+
+
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

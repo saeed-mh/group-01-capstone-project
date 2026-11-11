@@ -99,3 +99,38 @@ th {
 .form-row button:hover {
     background: #1b5e20;
 }
+
+.rule-form {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 10px;
+    align-items: center;
+    max-width: 600px;
+}
+
+.rule-form input,
+.rule-form select {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.rule-form .form-row {
+    grid-column: 2;
+    justify-content: flex-start;
+}
+
+.small-button {
+    padding: 4px 10px;
+    margin: 2px;
+    border: none;
+    border-radius: 4px;
+    background: #2e7d32;
+    color: white;
+    cursor: pointer;
+}
+
+.small-button.danger {
+    background: #c0392b;
+}
