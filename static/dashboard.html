@@ -17,36 +17,54 @@
     </nav>
     <h1>Statistics Dashboard</h1>
 
+    <form id="filters" class="form-row">
+        <label for="start">From</label>
+        <input type="date" id="start">
+        <label for="end">To</label>
+        <input type="date" id="end">
+        <label for="region">City</label>
+        <select id="region"><option value="">All cities</option></select>
+        <button type="submit" id="apply">Apply</button>
+    </form>
+
     <p>Total classifications: <span id="total">0</span></p>
     <p>Recycling rate: <span id="recycling-rate">0%</span></p>
     <p>Accuracy from user feedback: <span id="accuracy">No feedback yet</span></p>
+    <p id="message" role="status"></p>
+
+    <div class="form-row">
+        <button type="button" id="export" disabled>Download CSV</button>
+        <button type="button" id="summarize" disabled>Generate AI summary</button>
+    </div>
+    <p id="summary" class="tip" role="status" hidden></p>
 
     <h2>Waste categories</h2>
-    <table border="1" cellpadding="8">
-        <thead>
-            <tr><th>Category</th><th>Count</th></tr>
-        </thead>
-        <tbody id="categories"></tbody>
-    </table>
+    <div style="max-width: 600px; height: 300px;">
+        <canvas id="category-chart" aria-label="Share of waste categories" role="img"></canvas>
+    </div>
 
     <h2>Classifications per day</h2>
-    <table border="1" cellpadding="8">
-        <thead>
-            <tr><th>Date</th><th>Count</th></tr>
-        </thead>
-        <tbody id="daily-counts"></tbody>
-    </table>
+    <div style="max-width: 600px; height: 300px;">
+        <canvas id="daily-chart" aria-label="Number of classifications per day" role="img"></canvas>
+    </div>
 
     <h2>Top 5 items</h2>
-    <table border="1" cellpadding="8">
+    <table>
         <thead>
             <tr><th>Item</th><th>Count</th></tr>
         </thead>
         <tbody id="top-items"></tbody>
     </table>
 
-    <p id="message"></p>
+    <h2>Results marked wrong</h2>
+    <table>
+        <thead>
+            <tr><th>Item</th><th>Category</th><th>City</th><th>Date</th></tr>
+        </thead>
+        <tbody id="wrong-results"></tbody>
+    </table>
 
+    <script src="/static/js/chart.umd.min.js"></script>
     <script src="/static/js/dashboard.js"></script>
 </body>
 </html>

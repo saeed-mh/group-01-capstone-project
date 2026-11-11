@@ -1,0 +1,16 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta/openai/}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gemini-3.5-flash-lite}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me}
+      DATABASE_PATH: /app/data/app.db
+    volumes:
+      - app-data:/app/data
+
+volumes:
+  app-data:

@@ -90,6 +90,38 @@ python -m pytest tests/test_rules_coach.py -v
 | Admin (add, edit and delete rules, password-protected) | `/admin` | 2 – Recycling Rules |
 | Statistics Dashboard | `/dashboard` | 3 – Statistics Dashboard |
 
+## Statistics Dashboard
+
+Open `/dashboard` to see category and daily charts, recycling rate, feedback accuracy, top items and results marked wrong. Select dates and a city, then click **Apply**. CSV downloads and AI summaries use the same applied filters. The AI receives only summary numbers, never item names.
+
+## Demo data
+
+To add 1,000 sample classifications across the available cities and the last 30 days:
+
+```bash
+python seed_demo_data.py
+```
+
+This keeps existing records and does not add the demo records again if the script is repeated.
+
+## Run with Docker
+
+With Docker installed, run this from the project folder:
+
+```bash
+docker compose up
+```
+
+Open http://127.0.0.1:5000. Compose reads the AI settings and admin password from `.env`. Without an API key, the app uses demo mode; real image classification and AI summaries need a key.
+
+The SQLite database is kept in a named Docker volume so it survives container restarts. To add demo data to the running container:
+
+```bash
+docker compose exec web python seed_demo_data.py
+```
+
+Stop the app with `Ctrl+C` or `docker compose down`.
+
 ## Presentation Video
 
 [Watch the team presentation](https://drive.google.com/file/d/1dMtmLWlaKOn-08XC9T-9Ur56MzPHkIFH/view?usp=sharing)

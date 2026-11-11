@@ -4,7 +4,7 @@ import sqlite3
 from io import BytesIO
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from PIL import Image, UnidentifiedImageError
 from werkzeug.exceptions import RequestEntityTooLarge
 
@@ -18,7 +18,10 @@ from app.rules_coach.errors import RulesCoachError
 from app.rules_coach.rule_repository import RuleRepository
 from app.rules_coach.rule_service import RuleService
 from app.rules_coach.sustainability_coach import SustainabilityCoach
+from app.statistics.csv_exporter import CsvExporter
+from app.statistics.date_filter import DateFilter
 from app.statistics.errors import StatisticsError
+from app.statistics.insight_generator import InsightGenerator
 from app.statistics.statistics_service import StatisticsService
 
 
@@ -319,13 +322,51 @@ def create_app():
     def dashboard_page():
         return app.send_static_file("dashboard.html")
 
-    @app.route("/api/stats")
-    def api_stats():
+    def selected_statistics():
         try:
-            statistics = StatisticsService(db_path)
+            date_filter = DateFilter(request.args.get("start"), request.args.get("end"))
+        except ValueError as error:
+            raise StatisticsError(
+                "Use valid dates with the start date on or before the end date.", 400
+            ) from error
+        region = request.args.get("region", "").strip() or None
+        statistics = StatisticsService(db_path)
+        try:
             statistics.load_data()
-            return jsonify(statistics.chart_data())
         except sqlite3.Error as error:
             raise StatisticsError("Could not load statistics.", 500) from error
+        return statistics, date_filter, region
+
+    @app.route("/api/stats")
+    def api_stats():
+        statistics, date_filter, region = selected_statistics()
+        stats = statistics.chart_data(date_filter, region)
+        stats["wrong_results"] = statistics.wrong_results(date_filter, region)
+        return jsonify(stats)
+
+    @app.route("/api/stats/export")
+    def api_stats_export():
+        statistics, date_filter, region = selected_statistics()
+        try:
+            data = CsvExporter(statistics).export(date_filter, region)
+        except sqlite3.Error as error:
+            raise StatisticsError("Could not export statistics.", 500) from error
+        return send_file(
+            data, mimetype="text/csv", as_attachment=True,
+            download_name="classifications.csv",
+        )
+
+    @app.route("/api/stats/summary", methods=["POST"])
+    def api_stats_summary():
+        statistics, date_filter, region = selected_statistics()
+        stats = statistics.chart_data(date_filter, region)
+        ai_client = app.config["AI_CLIENT"]
+        if stats["total"] and isinstance(ai_client, DemoAIClient):
+            raise StatisticsError("The AI summary is unavailable in demo mode.", 503)
+        try:
+            summary = InsightGenerator(ai_client).summarize(stats)
+        except Exception as error:
+            raise StatisticsError("The summary is not available right now.", 503) from error
+        return jsonify({"summary": summary})
 
     return app
