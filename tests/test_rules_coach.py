@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 from app.rules_coach.recycling_rule import RecyclingRule
@@ -232,3 +234,27 @@ def test_admin_update_missing_rule_returns_404(client, admin_headers):
 
     assert response.status_code == 404
     assert response.get_json() == {"error": "Rule not found."}
+
+
+def test_lookup_returns_bin_and_tip_for_category_and_city(client):
+    rule_service = client.application.config["RULE_SERVICE"]
+
+    rule = rule_service.get_rule("packaging", "Dortmund")
+
+    assert rule.bin_name == "Gelbe Tonne"
+    assert rule.instructions == "Empty it, no need to wash."
+
+
+def test_lookup_returns_none_for_unknown_city(client):
+    rule_service = client.application.config["RULE_SERVICE"]
+
+    assert rule_service.get_rule("packaging", "Paris") is None
+
+
+def test_lookup_takes_less_than_one_second(client):
+    rule_service = client.application.config["RULE_SERVICE"]
+
+    start = time.perf_counter()
+    rule_service.get_rule("glass", "Berlin")
+
+    assert time.perf_counter() - start < 1
