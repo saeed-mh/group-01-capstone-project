@@ -1,8 +1,11 @@
+from app.rules_coach.recycling_rule import RecyclingRule
 from app.rules_coach.rule_repository import RuleRepository
 
 
 class RuleService:
     """Finds the right recycling rule for a category and city."""
+
+    FIELDS = ("region", "category", "bin_name", "bin_color", "instructions", "examples")
 
     def __init__(self, repository):
         self.repository = repository
@@ -27,6 +30,20 @@ class RuleService:
                 return rule
         return None
 
+    def _rule_from_data(self, rule_id, data):
+        """Build a RecyclingRule from a dict (e.g. JSON from the admin page)."""
+        values = [str(data.get(field) or "") for field in self.FIELDS]
+        return RecyclingRule(rule_id, *values)
+
+    def get_all_rules(self):
+        """Return the rules of all cities."""
+        return self.repository.get_all()
+
+    def add_rule(self, data):
+        """Check the data, save a new rule and return its id."""
+        rule = self._rule_from_data(None, data)
+        return self.repository.add(rule)
+
     def get_rules(self, region):
         """Return all rules of one city."""
         return [
@@ -34,6 +51,15 @@ class RuleService:
             for rule in self.repository.get_all()
             if rule.region.lower() == region.lower()
         ]
+
+    def update_rule(self, rule_id, data):
+        """Check the data and save it over the rule with this id."""
+        rule = self._rule_from_data(rule_id, data)
+        return self.repository.update(rule)
+
+    def delete_rule(self, rule_id):
+        """Delete the rule with this id."""
+        return self.repository.delete(rule_id)
 
     def get_regions(self):
         """Return all cities that have rules, sorted A–Z."""

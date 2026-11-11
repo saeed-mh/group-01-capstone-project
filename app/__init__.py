@@ -1,3 +1,4 @@
+import hmac
 import os
 import sqlite3
 from io import BytesIO
@@ -52,6 +53,15 @@ def create_app():
 
     app.config["CLASSIFICATION_SERVICE"] = classification_service
 
+    def check_admin():
+        """Stop the request if the admin password is missing or wrong."""
+        password = request.headers.get("X-Admin-Password", "")
+        expected = os.getenv("ADMIN_PASSWORD", "")
+        if not expected or not hmac.compare_digest(
+            password.encode(), expected.encode()
+        ):
+            raise RulesCoachError("Wrong admin password.", 401)
+
     @app.errorhandler(AppError)
     def handle_app_error(error):
         return jsonify(error.to_dict()), error.status_code
@@ -88,6 +98,45 @@ def create_app():
             raise RulesCoachError("Please type an item to search.", 400)
         rules = app.config["RULE_SERVICE"].search(text, region)
         return jsonify([rule.to_dict() for rule in rules])
+
+    @app.route("/api/admin/login", methods=["POST"])
+    def api_admin_login():
+        check_admin()
+        return jsonify({"message": "Login successful."})
+
+    @app.route("/api/rules")
+    def api_rules():
+        rules = app.config["RULE_SERVICE"].get_all_rules()
+        return jsonify([rule.to_dict() for rule in rules])
+
+    @app.route("/api/rules", methods=["POST"])
+    def api_add_rule():
+        check_admin()
+        data = request.get_json(silent=True) or {}
+        try:
+            rule_id = app.config["RULE_SERVICE"].add_rule(data)
+        except ValueError as error:
+            raise RulesCoachError(str(error), 400) from error
+        return jsonify({"id": rule_id, "message": "Rule added."}), 201
+
+    @app.route("/api/rules/<int:rule_id>", methods=["PUT"])
+    def api_update_rule(rule_id):
+        check_admin()
+        data = request.get_json(silent=True) or {}
+        try:
+            updated = app.config["RULE_SERVICE"].update_rule(rule_id, data)
+        except ValueError as error:
+            raise RulesCoachError(str(error), 400) from error
+        if not updated:
+            raise RulesCoachError("Rule not found.", 404)
+        return jsonify({"id": rule_id, "message": "Rule updated."})
+
+    @app.route("/api/rules/<int:rule_id>", methods=["DELETE"])
+    def api_delete_rule(rule_id):
+        check_admin()
+        if not app.config["RULE_SERVICE"].delete_rule(rule_id):
+            raise RulesCoachError("Rule not found.", 404)
+        return jsonify({"id": rule_id, "message": "Rule deleted."})
 
     @app.route("/coach")
     def coach_page():

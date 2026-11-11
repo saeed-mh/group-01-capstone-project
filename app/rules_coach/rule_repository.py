@@ -57,7 +57,7 @@ class RuleRepository:
     def update(self, rule):
         """Save changes to an existing rule (found by its id)."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute(
+            cursor = conn.execute(
                 "UPDATE recycling_rule "
                 "SET region = ?, category = ?, bin_name = ?, bin_color = ?, "
                 "instructions = ?, examples = ? "
@@ -73,10 +73,13 @@ class RuleRepository:
                 ),
             )
 
+            return cursor.rowcount > 0
+
     def delete(self, rule_id):
         """Remove the rule with this id."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("DELETE FROM recycling_rule WHERE id = ?", (rule_id,))
+            cursor = conn.execute("DELETE FROM recycling_rule WHERE id = ?", (rule_id,))
+            return cursor.rowcount > 0
 
     def load_seed(self, csv_path):
         """Load rules from a CSV file, but only if the table is still empty."""
