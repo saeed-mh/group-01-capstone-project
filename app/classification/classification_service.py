@@ -7,6 +7,7 @@ class ClassificationService:
     """Handles waste classification using the OpenAI client."""
 
     def __init__(self, ai_client, rule_service=None, repository=None):
+        # Connect the AI client, recycling rules, and database repository
         self.ai_client = ai_client
         self.rule_service = rule_service
         self.repository = repository
@@ -17,6 +18,7 @@ class ClassificationService:
 
     @ai_client.setter
     def ai_client(self, value):
+        # An AI client is required for classification
         if value is None:
             raise ValueError("AI client cannot be empty")
         self._ai_client = value
@@ -38,9 +40,11 @@ class ClassificationService:
         self._repository = value
 
     def classify_image(self, image, region):
+        # Check that image data was provided
         if not image:
             raise ValueError("Image cannot be empty")
 
+        # Get the AI classification and create a result object
         ai_result = self.ai_client.analyze_image(image)
         return self._create_result(ai_result, region, "image")
 
@@ -53,6 +57,7 @@ class ClassificationService:
 
  
     def _create_result(self, ai_result, region, input_type):
+        # The AI response must contain classification data in a dictionary
         if not isinstance(ai_result, dict):
             raise ValueError("Not recognised, please try again")
 
@@ -60,6 +65,7 @@ class ClassificationService:
         item_name = ai_result.get("item_name")
         explanation = ai_result.get("explanation", "")
 
+        # Validate the category and item name before creating the result
         if (
             not isinstance(category, str)
             or category.strip().lower() not in {
@@ -71,6 +77,7 @@ class ClassificationService:
         ):
             raise ValueError("Not recognised, please try again")
 
+        # Normalize the category for matching with recycling rules
         category = category.strip().lower()
 
         bin_name = ""
@@ -85,6 +92,7 @@ class ClassificationService:
                 bin_color = rule.bin_color
                 tip = rule.instructions
 
+        # Create a classification result with the validated data
         result = ClassificationResult(
             id=None,
             item_name=item_name,
@@ -98,6 +106,7 @@ class ClassificationService:
         result.bin_color = bin_color
         result.tip = tip
 
+        # Save the classification if a database repository is available
         if self.repository is not None:
             result.id = self.repository.add(
                 item_name=result.item_name,
@@ -111,11 +120,13 @@ class ClassificationService:
         return result
 
     def save_feedback(self, result, is_correct):
-        """Store user feedback on a classification result."""
+        """Store user feedback on a classification result"""
 
         if not isinstance(is_correct, bool):
             raise ValueError("Feedback must be True or False")
 
+        
+        # Feedback can only be saved for an existing database record
         if self.repository is None or result.id is None:
             raise ValueError("Classification is not saved")
 
