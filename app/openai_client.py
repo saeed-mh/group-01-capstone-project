@@ -7,25 +7,30 @@ from openai import OpenAI
 
 
 class OpenAIClient:
-    """Handles communication with an OpenAI-compatible API (OpenAI or Gemini)."""
+    """Handles communication with an OpenAI-compatible API (OpenAI or Gemini)"""
 
     def __init__(self, api_key=None, model=None):
+          # Load environment variables from the .env file
         load_dotenv()
 
+          
         if api_key is None:
             api_key = os.getenv("OPENAI_API_KEY")
 
         if model is None:
             model = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
 
+          # Store API settings and leave the client uninitialized initially
         self.api_key = api_key
         self.model = model
         self._client = None
 
+          # Return the stored API key
     @property
     def api_key(self):
         return self._api_key
 
+        # Update the API key through the property setter
     @api_key.setter
     def api_key(self, value):
         self._api_key = value
@@ -34,33 +39,41 @@ class OpenAIClient:
     def model(self):
         return self._model
 
+        # Prevent an empty model name from being assigned
     @model.setter
     def model(self, value):
         if not value:
             raise ValueError("Model name cannot be empty")
         self._model = value
 
+       # An API key is required before creating the client
     def initialize(self):
         if not self.api_key:
             raise ValueError("OpenAI API key is missing")
 
+        # Create the client using the API key and OPENAI_BASE_URL allows using compatible APIs
         self._client = OpenAI(
             api_key=self.api_key, base_url=os.getenv("OPENAI_BASE_URL")
         )
 
+        # Initialize the client only when the first request is made
     def chat(self, prompt):
         if self._client is None:
             self.initialize()
 
+        # Send the prompt as a user message to the selected model
         response = self._client.chat.completions.create(
             model=self.model, messages=[{"role": "user", "content": prompt}]
         )
+        # Extract the generated text from the first response choice
         return response.choices[0].message.content
 
     def analyze_text(self, text):
         prompt = self._classification_prompt() + text
         answer = self.chat(prompt)
 
+        
+        # Convert the AI response into a validated Python dictionary
         return self._parse_classification(answer)
 
     def analyze_image(self, image):
@@ -79,6 +92,7 @@ class OpenAIClient:
 
         encoded_image = base64.b64encode(image).decode("utf-8")
 
+         # Send both the classification instructions and image to the model
         response = self._client.chat.completions.create(
             model=self.model,
             messages=[
@@ -125,6 +139,7 @@ class OpenAIClient:
 
         return result
 
+       # Define the waste categories and expected JSON response format
     def _classification_prompt(self):
         return (
             "Identify this waste item. "
