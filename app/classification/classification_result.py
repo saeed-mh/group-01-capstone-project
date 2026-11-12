@@ -10,6 +10,7 @@ class ClassificationResult:
     def __init__(self, id, item_name, category, region, bin_name,
                  explanation, input_type, is_correct=None):
 
+        # Store classification details using their property setters             
         self.id = id
         self.item_name = item_name
         self.category = category
@@ -27,6 +28,7 @@ class ClassificationResult:
 
     @id.setter
     def id(self, value):
+         # allow None for new records, otherwise require a positive integer
         if value is not None and (type(value) is not int or value <= 0):
             raise ValueError("ID must be a positive integer or None")
         self._id = value
@@ -37,6 +39,7 @@ class ClassificationResult:
 
     @item_name.setter
     def item_name(self, value):
+        # Reject empty item names and remove surrounding spaces
         if not value or not value.strip():
             raise ValueError("Item name cannot be empty")
         self._item_name = value.strip()
@@ -47,12 +50,14 @@ class ClassificationResult:
 
     @category.setter
     def category(self, value):
+        # Convert string categories into WasteCategory enum values
         if isinstance(value, str):
             try:
                 value = WasteCategory(value.strip().lower())
             except ValueError:
                 raise ValueError("Invalid waste category")
 
+         # Reject any category that is not defined in the enum
         if not isinstance(value, WasteCategory):
             raise ValueError("Invalid waste category")
 
@@ -90,6 +95,7 @@ class ClassificationResult:
 
     @input_type.setter
     def input_type(self, value):
+        # Only text and image classification inputs are supported
         if value not in ["image", "text"]:
             raise ValueError("Input type must be image or text")
         self._input_type = value
