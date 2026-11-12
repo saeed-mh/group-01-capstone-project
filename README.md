@@ -28,30 +28,59 @@ A web app that classifies waste from a photo or text with AI (Google Gemini) and
 
 ## How to run
 
-1. Clone the project and open the folder:
-   ```bash
-   git clone -b final-capstone-project https://github.com/saeed-mh/group-01-capstone-project.git
-   cd group-01-capstone-project
-   ```
-2. Create a virtual environment and install the requirements:
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate        # Windows
-   source venv/bin/activate     # macOS / Linux
-   python -m pip install -r requirements.txt
-   ```
-3. Create your `.env` file from the example (see [Configuration](#configuration)):
-   ```bash
-   copy .env.example .env       # Windows
-   cp .env.example .env         # macOS / Linux
-   ```
-4. Start the app:
-   ```bash
-   python run.py
-   ```
-5. Open http://127.0.0.1:5000
+### 1. Get the project
+```bash
+git clone -b final-capstone-project https://github.com/saeed-mh/group-01-capstone-project.git
+cd group-01-capstone-project
+```
 
-The SQLite database (`data/app.db`) is created automatically on the first start, and the recycling rules are loaded from `data/rules.csv`.
+### 2. Create the `.env` file
+```bash
+copy .env.example .env      # Windows
+cp .env.example .env        # macOS / Linux
+```
+Open `.env` and fill in two lines:
+- `OPENAI_API_KEY=` your free Google Gemini key (https://aistudio.google.com → "Get API key")
+- `ADMIN_PASSWORD=` any password for the Admin page
+
+Leave the other lines unchanged. Without a key, the app still runs in demo mode with fixed sample answers.
+
+### 3. Start the app
+
+**Option A: Docker (recommended)**
+```bash
+docker compose up --build
+```
+
+**Option B: Python 3.11 or newer**
+```bash
+python -m venv venv
+venv\Scripts\activate          # Windows
+source venv/bin/activate       # macOS / Linux
+python -m pip install -r requirements.txt
+python run.py
+```
+
+### 4. Open the app
+http://localhost:5000
+
+The database is created automatically on the first start, with the recycling rules from `data/rules.csv`.
+
+### 5. Optional: add demo data for the dashboard
+```bash
+docker compose exec web python seed_demo_data.py   # Option A
+python seed_demo_data.py                           # Option B
+```
+
+### 6. Run the tests
+```bash
+docker compose exec web python -m pytest   # Option A
+python -m pytest                           # Option B
+```
+The tests use a temporary database and fake AI clients, so they need no API key.
+
+### Stop the app
+Press `Ctrl+C`. With Docker, also run `docker compose down`.
 
 ## Configuration
 
@@ -66,18 +95,6 @@ All settings are in the `.env` file. It is ignored by Git, so your API key and p
 | `DATABASE_PATH` | Where the SQLite database is stored (default `data/app.db`) |
 
 Without an API key, the app still runs in **demo mode**: the coach and the classification return fixed demo answers.
-
-## Tests
-
-```bash
-python -m pytest
-```
-
-The tests use a temporary database and fake AI clients, so they never call the real AI and do not need an API key. To run only one subsystem's tests:
-
-```bash
-python -m pytest tests/test_rules_coach.py -v
-```
 
 ## Pages
 
