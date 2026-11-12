@@ -117,6 +117,6 @@ Without an API key, the app still runs in **demo mode**: the coach and the class
 
 Open `/dashboard` to see category and daily charts, recycling rate, feedback accuracy, top items and results marked wrong. Select dates and a city, then click **Apply**. CSV downloads and AI summaries use the same applied filters. The AI receives only summary numbers, never item names.
 
-## Presentation Video
+## Final Presentation Video
 
-[Watch the team presentation](https://drive.google.com/file/d/1dMtmLWlaKOn-08XC9T-9Ur56MzPHkIFH/view?usp=sharing)
+[Watch the final presentation](https://drive.google.com/file/d/1BVy2W2iA70L1ieDsJ7-bMvTA0inXO_Wn/view?usp=sharing)
