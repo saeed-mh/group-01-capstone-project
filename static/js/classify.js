@@ -6,6 +6,7 @@ async function loadClassifications() {
     message.textContent = "Loading classifications...";
 
     try {
+        // Request classification history from the Flask backend
         const response = await fetch("/api/classifications");
 
         if (!response.ok) {
@@ -21,6 +22,7 @@ async function loadClassifications() {
             return;
         }
 
+        // Create a table row for each classification record
         for (const record of records) {
             const row = document.createElement("tr");
 
@@ -38,6 +40,7 @@ async function loadClassifications() {
                 record.created_at
             ];
 
+            // Create a cell for each field and add it to the row
             for (const value of values) {
                 const cell = document.createElement("td");
                 cell.textContent = value ?? "";
@@ -89,6 +92,7 @@ async function loadRegions() {
 
 // Submit text or image for classification.
 async function classifyWaste(event) {
+    // Prevent the form from reloading the webpage
     event.preventDefault();
 
     const region = document.getElementById("region").value;
@@ -99,6 +103,7 @@ async function classifyWaste(event) {
     const resultSection = document.getElementById("classification-result");
     const button = document.getElementById("classify-button");
 
+   // Reset the previous result before starting a new classification
     message.textContent = "";
     resultSection.hidden = true;
     currentClassificationId = null;
@@ -115,6 +120,7 @@ async function classifyWaste(event) {
     }
 
     if (image) {
+        // Validate the image format using MIME type and file extension
         const allowedTypes = ["image/jpeg", "image/png"];
         const allowedExtensions = /\.(jpg|jpeg|png)$/i;
 
@@ -143,6 +149,7 @@ async function classifyWaste(event) {
     message.textContent = "Classifying waste...";
 
     try {
+        // Send the classification request to the Flask API
         const response = await fetch("/api/classify", {
             method: "POST",
             body: formData
@@ -183,7 +190,7 @@ async function classifyWaste(event) {
         binElement.style.fontWeight = "bold";
 
 
-
+        // Enable feedback buttons and display the new result
         document.getElementById("feedback-message").textContent = "";
         document.getElementById("feedback-correct").disabled = false;
         document.getElementById("feedback-wrong").disabled = false;
@@ -198,6 +205,7 @@ async function classifyWaste(event) {
         console.error(error);
 
     } finally {
+        // Re-enable the button even if the API request fails
         button.disabled = false;
     }
 }
@@ -217,6 +225,7 @@ async function submitFeedback(isCorrect) {
     message.textContent = "Saving feedback...";
 
     try {
+        // Send Boolean feedback for the current classification ID
         const response = await fetch(
             `/api/classifications/${currentClassificationId}/feedback`,
             {
