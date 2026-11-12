@@ -10,7 +10,7 @@ from app.classification.classification_service import ClassificationService
 
 
 class FakeOpenAIClient:
-    """Simulates OpenAI without making real API calls."""
+    """Simulates OpenAI without making real API calls"""
 
     def analyze_text(self, text):
         return {
@@ -28,7 +28,8 @@ class FakeOpenAIClient:
     
              
 def create_test_image(image_format):
-    """Create a genuine small image for testing."""
+    """Create a genuine small image for testing"""
+    # Create a 10x10 white image and store it in memory
     image = Image.new("RGB", (10, 10), "white")
     buffer = BytesIO()
     image.save(buffer, format=image_format)
@@ -77,6 +78,7 @@ def test_classify_rejects_empty_image():
 def test_classification_error_returns_json(client, monkeypatch):
     repository = client.application.config["CLASSIFICATION_REPOSITORY"]
 
+    # Replace the database method with one that raises an error
     def fake_database_error(limit):
         raise sqlite3.OperationalError("Database unavailable")
 
@@ -137,6 +139,7 @@ def test_api_classification_saved(client, monkeypatch):
 
     records = repository.get_recent(20)
 
+    # Confirm that the saved record can be retrieved from SQLite
     assert any(
         record["id"] == classification_id
         and record["item_name"] == "Newspaper"
@@ -208,6 +211,7 @@ def test_api_classify_jpg(client, monkeypatch):
     service = client.application.config["CLASSIFICATION_SERVICE"]
     monkeypatch.setattr(service, "ai_client", FakeOpenAIClient())
 
+    # Generate a valid JPEG image instead of using fake image bytes
     image = create_test_image("JPEG")
 
     response = client.post("/api/classify", data={
@@ -258,6 +262,7 @@ def test_api_feedback_correct(client):
 
     assert response.status_code == 200
 
+    # Read the database directly to verify that True was stored as 1
     with sqlite3.connect(repository.db_path) as conn:
         value = conn.execute(
             "SELECT is_correct FROM classification WHERE id = ?",
@@ -285,6 +290,7 @@ def test_api_feedback_wrong(client):
 
     assert response.status_code == 200
 
+    # Verify that False was stored as 0 in the database
     with sqlite3.connect(repository.db_path) as conn:
         value = conn.execute(
             "SELECT is_correct FROM classification WHERE id = ?",
@@ -326,6 +332,7 @@ def test_unrecognised_item():
 
     service = ClassificationService(UnknownAIClient())
 
+    # Verify that an unsupported AI category raises a ValueError
     with pytest.raises(
         ValueError,
         match="Not recognised, please try again"
