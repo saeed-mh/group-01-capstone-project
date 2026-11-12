@@ -4,13 +4,14 @@ from datetime import datetime
 
 
 class ClassificationRepository:
-    """Stores and retrieves waste classifications using SQLite."""
+    """Stores and retrieves waste classifications using SQLite"""
 
     def __init__(self, db_path):
+        # Store the database file path
         self.db_path = db_path
 
     def init_db(self):
-        """Create the classification table if it does not exist."""
+        """Create the classification table if it does not exist"""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS classification (
@@ -30,8 +31,10 @@ class ClassificationRepository:
             explanation, input_type, is_correct=None):
         """Add a new classification to the database."""
 
+        # Generate a timestamp for the new record
         created_at = datetime.now().isoformat(timespec="seconds")
 
+        # Insert the classification using parameterized SQL        
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute("""
                 INSERT INTO classification
@@ -43,12 +46,14 @@ class ClassificationRepository:
                 explanation, input_type, is_correct, created_at
             ))
 
+            # Return the automatically generated database ID
             return cursor.lastrowid
 
     def get_recent(self, limit=10):
         """Return the latest classification records."""
 
         with sqlite3.connect(self.db_path) as conn:
+            # Allow database rows to be accessed by column names
             conn.row_factory = sqlite3.Row
 
             rows = conn.execute("""
@@ -57,11 +62,12 @@ class ClassificationRepository:
                 LIMIT ?
             """, (limit,)).fetchall()
 
+        # Convert the returned rows into dictionaries
         return [dict(row) for row in rows]
 
     
     def update_feedback(self, classification_id, is_correct):
-        """Update Correct/Wrong feedback for a saved classification."""
+        """Update Correct/Wrong feedback for a saved classification"""
 
         if not isinstance(is_correct, bool):
             raise ValueError("Feedback must be True or False")
@@ -73,17 +79,19 @@ class ClassificationRepository:
                 WHERE id = ?
             """, (int(is_correct), classification_id))
 
+            # Return True if at least one record was updated
             return cursor.rowcount > 0
 
     
     def load_seed(self):
-        """Insert demo classifications if the table is empty."""
+        """Insert demo classifications if the table is empty"""
 
         with sqlite3.connect(self.db_path) as conn:
             count = conn.execute(
                 "SELECT COUNT(*) FROM classification"
             ).fetchone()[0]
 
+        # Avoid inserting duplicate demo data
         if count > 0:
             return
 
