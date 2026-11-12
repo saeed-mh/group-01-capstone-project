@@ -52,6 +52,8 @@ Leave the other lines unchanged. Without a key, the app still runs in demo mode 
 docker compose up --build
 ```
 
+Compose reads the AI settings and admin password from `.env`. The SQLite database is kept in a named Docker volume so it survives container restarts. Real image classification and AI summaries require an API key.
+
 **Option B: Python 3.11 or newer**
 ```bash
 python -m venv venv
@@ -67,10 +69,14 @@ http://localhost:5000
 The database is created automatically on the first start, with the recycling rules from `data/rules.csv`.
 
 ### 5. Optional: add demo data for the dashboard
+
+These commands add 1,000 sample classifications across the available cities and the last 30 days.
 ```bash
 docker compose exec web python seed_demo_data.py   # Option A
 python seed_demo_data.py                           # Option B
 ```
+
+This keeps existing records and does not add the demo records again if the script is repeated.
 
 ### 6. Run the tests
 ```bash
@@ -110,34 +116,6 @@ Without an API key, the app still runs in **demo mode**: the coach and the class
 ## Statistics Dashboard
 
 Open `/dashboard` to see category and daily charts, recycling rate, feedback accuracy, top items and results marked wrong. Select dates and a city, then click **Apply**. CSV downloads and AI summaries use the same applied filters. The AI receives only summary numbers, never item names.
-
-## Demo data
-
-To add 1,000 sample classifications across the available cities and the last 30 days:
-
-```bash
-python seed_demo_data.py
-```
-
-This keeps existing records and does not add the demo records again if the script is repeated.
-
-## Run with Docker
-
-With Docker installed, run this from the project folder:
-
-```bash
-docker compose up
-```
-
-Open http://127.0.0.1:5000. Compose reads the AI settings and admin password from `.env`. Without an API key, the app uses demo mode; real image classification and AI summaries need a key.
-
-The SQLite database is kept in a named Docker volume so it survives container restarts. To add demo data to the running container:
-
-```bash
-docker compose exec web python seed_demo_data.py
-```
-
-Stop the app with `Ctrl+C` or `docker compose down`.
 
 ## Presentation Video
 

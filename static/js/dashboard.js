@@ -29,13 +29,22 @@ function drawCharts(stats) {
     if (categoryChart) categoryChart.destroy();
     if (dailyChart) dailyChart.destroy();
 
+    const categoryColors = {
+        packaging: "#F2C200",
+        paper: "#1F5FAD",
+        glass: "#2E8B57",
+        organic: "#8B5A2B",
+        residual: "#6E6E6E",
+        hazardous: "#C0392B"
+    };
+
     categoryChart = new Chart(document.getElementById("category-chart"), {
         type: "pie",
         data: {
             labels: Object.keys(stats.by_category),
             datasets: [{
                 data: Object.values(stats.by_category),
-                backgroundColor: ["#2e7d32", "#e6ad18", "#8d6e63", "#4599c3", "#b34d48", "#888888"]
+                backgroundColor: Object.keys(stats.by_category).map(category => categoryColors[category])
             }]
         },
         options: {
