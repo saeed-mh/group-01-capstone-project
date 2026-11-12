@@ -21,7 +21,7 @@ A web app that classifies waste from a photo or text with AI (Google Gemini) and
 <img width="2518" height="1454" alt="subsystem1_classification" src="docs/classification_uml.png" />
 
 ### Subsystem 2: Recycling Rules & Sustainability Coach
-<img width="2610" height="1190" alt="subsystem2_rules_coach" src="https://github.com/user-attachments/assets/0df89cd5-967f-4927-ad37-d50e89047f5b" />
+<img alt="subsystem2_rules_coach" src="docs/rules_coach_uml.png" />
 
 ### Subsystem 3: Statistics Dashboard
 <img width="2160" height="930" alt="subsystem3_statistics" src="docs/statistics_uml.png" />
