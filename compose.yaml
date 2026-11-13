@@ -1,16 +1,17 @@
+# Start the web app with runtime settings and a persistent SQLite volume.
 services:
-  web:
-    build: .
+  web:  # One Flask application service.
+    build: .  # Build the image using the Dockerfile in this folder.
     ports:
-      - "5000:5000"
-    environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta/openai/}
+      - "5000:5000"  # Map computer port 5000 to container port 5000.
+    environment:  # Supply settings when the container starts.
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}  # Read the key from the environment or .env; default to an empty value.
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta/openai/}  # Use the Gemini OpenAI-compatible endpoint by default.
       OPENAI_MODEL: ${OPENAI_MODEL:-gemini-3.5-flash-lite}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me}
-      DATABASE_PATH: /app/data/app.db
+      DATABASE_PATH: /app/data/app.db  # Store SQLite inside the mounted data directory.
     volumes:
-      - app-data:/app/data
+      - app-data:/app/data  # Named volume: keep database files when the container is replaced.
 
 volumes:
-  app-data:
+  app-data:  # Declare the persistent data volume used above.

@@ -4,35 +4,35 @@ import json
 class InsightGenerator:
     """Creates a short AI summary from aggregated statistics."""
 
-    def __init__(self, openai_client):
+    def __init__(self, openai_client):  # Receive an AI client from the caller; returns None.
         self.openai_client = openai_client
 
-    @property
+    @property  # Getter: return the stored AI client.
     def openai_client(self):
         return self._openai_client
 
-    @openai_client.setter
+    @openai_client.setter  # Setter: require a callable chat method; store the client; returns None.
     def openai_client(self, value):
-        if not callable(getattr(value, "chat", None)):
+        if not callable(getattr(value, "chat", None)):  # Accept a real client or a fake with the same chat interface.
             raise TypeError("openai_client must have a chat(prompt) method")
         self._openai_client = value
 
-    def summarize(self, stats):
+    def summarize(self, stats):  # Return summary text, or No data yet for an empty selection.
         if not isinstance(stats, dict) or "total" not in stats:
             raise ValueError("stats must be a dictionary containing total")
         if stats["total"] == 0:
-            return "No data yet"
-        keys = (
+            return "No data yet"  # Skip the external AI call when no records match.
+        keys = (  # Allow only these six aggregate fields; exclude individual item names.
             "total", "by_category", "per_day",
             "recycling_rate", "accuracy", "reviewed",
         )
-        aggregated = {key: stats[key] for key in keys if key in stats}
-        prompt = (
+        aggregated = {key: stats[key] for key in keys if key in stats}  # Dictionary comprehension: copy only permitted fields that exist.
+        prompt = (  # Build the prompt; adjacent strings join into one string.
             "Summarize these waste classification statistics in at most "
             "3 short, simple sentences. Use only the supplied numbers. "
             "These are classifications recorded in the app. "
             "Rates are percentages. Accuracy uses only results with user feedback. "
             "If reviewed is zero, say accuracy is not available.\n\n"
-            f"Statistics:\n{json.dumps(aggregated)}"
+            f"Statistics:\n{json.dumps(aggregated)}"  # json.dumps converts the aggregate dictionary into JSON text.
         )
-        return self.openai_client.chat(prompt)
+        return self.openai_client.chat(prompt)  # Return the injected client chat response.

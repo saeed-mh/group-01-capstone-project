@@ -1,4 +1,6 @@
+# Exclude local files and secrets from the Docker build context.
 .git
+# Keep the local API key and password out of the image.
 .env
 venv
 **/__pycache__

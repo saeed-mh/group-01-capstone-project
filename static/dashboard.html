@@ -1,3 +1,4 @@
+<!-- Statistics dashboard: filters, chart canvases, tables and API-driven output. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,35 +18,35 @@
     </nav>
     <h1>Statistics Dashboard</h1>
 
-    <form id="filters" class="form-row">
+    <form id="filters" class="form-row"> <!-- JavaScript submits these date and city filters without reloading the page. -->
         <label for="start">From</label>
         <input type="date" id="start">
         <label for="end">To</label>
         <input type="date" id="end">
         <label for="region">City</label>
-        <select id="region"><option value="">All cities</option></select>
+        <select id="region"><option value="">All cities</option></select> <!-- An empty city value means all cities. -->
         <button type="submit" id="apply">Apply</button>
     </form>
 
-    <p>Total classifications: <span id="total">0</span></p>
+    <p>Total classifications: <span id="total">0</span></p> <!-- JavaScript replaces these placeholder numbers after the API responds. -->
     <p>Recycling rate: <span id="recycling-rate">0%</span></p>
     <p>Accuracy from user feedback: <span id="accuracy">No feedback yet</span></p>
     <p id="message" role="status"></p>
 
     <div class="form-row">
-        <button type="button" id="export" disabled>Download CSV</button>
+        <button type="button" id="export" disabled>Download CSV</button> <!-- Enabled after statistics load successfully. -->
         <button type="button" id="summarize" disabled>Generate AI summary</button>
     </div>
-    <p id="summary" class="tip" role="status" hidden></p>
+    <p id="summary" class="tip" role="status" hidden></p> <!-- Hidden until the summary request starts. -->
 
     <h2>Waste categories</h2>
     <div style="max-width: 600px; height: 300px;">
-        <canvas id="category-chart" aria-label="Share of waste categories" role="img"></canvas>
+        <canvas id="category-chart" aria-label="Share of waste categories" role="img"></canvas> <!-- Drawing surface for the Chart.js category pie chart. -->
     </div>
 
     <h2>Classifications per day</h2>
     <div style="max-width: 600px; height: 300px;">
-        <canvas id="daily-chart" aria-label="Number of classifications per day" role="img"></canvas>
+        <canvas id="daily-chart" aria-label="Number of classifications per day" role="img"></canvas> <!-- Drawing surface for the daily bar chart. -->
     </div>
 
     <h2>Top 5 items</h2>
@@ -53,7 +54,7 @@
         <thead>
             <tr><th>Item</th><th>Count</th></tr>
         </thead>
-        <tbody id="top-items"></tbody>
+        <tbody id="top-items"></tbody> <!-- JavaScript adds the top-item rows here. -->
     </table>
 
     <h2>Results marked wrong</h2>
@@ -61,10 +62,10 @@
         <thead>
             <tr><th>Item</th><th>Category</th><th>City</th><th>Date</th></tr>
         </thead>
-        <tbody id="wrong-results"></tbody>
+        <tbody id="wrong-results"></tbody> <!-- JavaScript adds the wrong-result rows here. -->
     </table>
 
-    <script src="/static/js/chart.umd.min.js"></script>
+    <script src="/static/js/chart.umd.min.js"></script> <!-- Load the chart library before the dashboard code uses it. -->
     <script src="/static/js/dashboard.js"></script>
 </body>
 </html>

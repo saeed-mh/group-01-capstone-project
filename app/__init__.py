@@ -318,55 +318,55 @@ def create_app():
         except sqlite3.Error as error:
             raise ClassificationError("Could not save feedback.", 500) from error
 
-    @app.route("/dashboard")
-    def dashboard_page():
+    @app.route("/dashboard")  # Statistics dashboard page and API routes.
+    def dashboard_page():  # Return the dashboard HTML response.
         return app.send_static_file("dashboard.html")
 
-    def selected_statistics():
+    def selected_statistics():  # Return (StatisticsService, DateFilter, city); reuse this setup in all statistics APIs.
         try:
-            date_filter = DateFilter(request.args.get("start"), request.args.get("end"))
-        except ValueError as error:
+            date_filter = DateFilter(request.args.get("start"), request.args.get("end"))  # Read optional start/end query parameters and validate the range.
+        except ValueError as error:  # Invalid date text or reversed dates become HTTP 400.
             raise StatisticsError(
                 "Use valid dates with the start date on or before the end date.", 400
             ) from error
-        region = request.args.get("region", "").strip() or None
-        statistics = StatisticsService(db_path)
+        region = request.args.get("region", "").strip() or None  # A blank city means all cities.
+        statistics = StatisticsService(db_path)  # Use the database path from the surrounding create_app function.
         try:
             statistics.load_data()
         except sqlite3.Error as error:
-            raise StatisticsError("Could not load statistics.", 500) from error
+            raise StatisticsError("Could not load statistics.", 500) from error  # Wrap a database failure with a clear message; retain the cause.
         return statistics, date_filter, region
 
     @app.route("/api/stats")
-    def api_stats():
-        statistics, date_filter, region = selected_statistics()
+    def api_stats():  # Return filtered dashboard values and wrong results as JSON.
+        statistics, date_filter, region = selected_statistics()  # Unpack the three values returned by the helper.
         stats = statistics.chart_data(date_filter, region)
-        stats["wrong_results"] = statistics.wrong_results(date_filter, region)
-        return jsonify(stats)
+        stats["wrong_results"] = statistics.wrong_results(date_filter, region)  # chart_data does not include this detailed list.
+        return jsonify(stats)  # jsonify converts the dictionary into a Flask JSON response.
 
     @app.route("/api/stats/export")
-    def api_stats_export():
+    def api_stats_export():  # Return the filtered CSV as a downloadable file response.
         statistics, date_filter, region = selected_statistics()
         try:
-            data = CsvExporter(statistics).export(date_filter, region)
+            data = CsvExporter(statistics).export(date_filter, region)  # Inject the service; export returns a BytesIO file in memory.
         except sqlite3.Error as error:
             raise StatisticsError("Could not export statistics.", 500) from error
         return send_file(
-            data, mimetype="text/csv", as_attachment=True,
+            data, mimetype="text/csv", as_attachment=True,  # Send CSV as an attachment so the browser downloads it.
             download_name="classifications.csv",
         )
 
     @app.route("/api/stats/summary", methods=["POST"])
-    def api_stats_summary():
+    def api_stats_summary():  # Return {"summary": text} as JSON, or an error response.
         statistics, date_filter, region = selected_statistics()
         stats = statistics.chart_data(date_filter, region)
         ai_client = app.config["AI_CLIENT"]
-        if stats["total"] and isinstance(ai_client, DemoAIClient):
+        if stats["total"] and isinstance(ai_client, DemoAIClient):  # Non-empty data needs a real client instead of fixed demo answers.
             raise StatisticsError("The AI summary is unavailable in demo mode.", 503)
         try:
-            summary = InsightGenerator(ai_client).summarize(stats)
+            summary = InsightGenerator(ai_client).summarize(stats)  # Pass the shared client into the summary generator.
         except Exception as error:
-            raise StatisticsError("The summary is not available right now.", 503) from error
+            raise StatisticsError("The summary is not available right now.", 503) from error  # A summary failure becomes HTTP 503 (service unavailable).
         return jsonify({"summary": summary})
 
     return app

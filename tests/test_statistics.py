@@ -1,3 +1,4 @@
+# Statistics tests use temporary databases and fake AI. Passing tests return None.
 from collections import Counter
 from contextlib import closing
 import csv
@@ -13,15 +14,15 @@ from app.statistics.insight_generator import InsightGenerator
 from app.statistics.statistics_service import StatisticsService
 
 
-class FakeOpenAIClient:
-    def chat(self, prompt):
+class FakeOpenAIClient:  # Test double with the same chat interface as the real AI client.
+    def chat(self, prompt):  # Return the prompt unchanged so tests can inspect it; no API call.
         return prompt
 
 
-def test_stats_returns_dashboard_values(client):
+def test_stats_returns_dashboard_values(client):  # Check the API totals and percentages from six sample records.
     response = client.get("/api/stats")
 
-    assert response.status_code == 200
+    assert response.status_code == 200  # A failed assert makes this test fail.
     stats = response.get_json()
     assert stats["total"] == 6
     assert stats["by_category"] == {
@@ -35,10 +36,10 @@ def test_stats_returns_dashboard_values(client):
     assert len(stats["top_items"]) == 5
 
 
-def test_stats_returns_zero_values_for_empty_database(client):
+def test_stats_returns_zero_values_for_empty_database(client):  # Check an empty database returns zero values and empty collections.
     repository = client.application.config["CLASSIFICATION_REPOSITORY"]
     with closing(sqlite3.connect(repository.db_path)) as conn:
-        conn.execute("DELETE FROM classification")
+        conn.execute("DELETE FROM classification")  # Clear only the temporary database created by the client fixture.
         conn.commit()
 
     response = client.get("/api/stats")
@@ -56,11 +57,11 @@ def test_stats_returns_zero_values_for_empty_database(client):
     }
 
 
-def test_stats_returns_json_error_when_database_cannot_be_read(client, monkeypatch):
-    def fail_to_load(self):
+def test_stats_returns_json_error_when_database_cannot_be_read(client, monkeypatch):  # Check a database failure becomes a JSON error with HTTP 500.
+    def fail_to_load(self):  # Raise a simulated database error; never returns normally.
         raise sqlite3.OperationalError("unable to open database file")
 
-    monkeypatch.setattr(StatisticsService, "load_data", fail_to_load)
+    monkeypatch.setattr(StatisticsService, "load_data", fail_to_load)  # Temporarily replace load_data; monkeypatch restores it after the test.
 
     response = client.get("/api/stats")
 
@@ -68,7 +69,7 @@ def test_stats_returns_json_error_when_database_cannot_be_read(client, monkeypat
     assert response.get_json() == {"error": "Could not load statistics."}
 
 
-def test_statistics_filters_by_date_and_city():
+def test_statistics_filters_by_date_and_city():  # Check date/city filtering and the two percentage calculations.
     statistics = StatisticsService()
     statistics.df = pd.DataFrame([
         {"item_name": "Newspaper", "category": "paper", "region": "Berlin",
@@ -82,11 +83,11 @@ def test_statistics_filters_by_date_and_city():
 
     assert statistics.total(date_filter, "Berlin") == 1
     assert statistics.by_category(date_filter, "Berlin") == {"paper": 1}
-    assert statistics.recycling_rate() == 66.67
-    assert statistics.accuracy() == 50.0
+    assert statistics.recycling_rate() == 66.67  # Two of three categories are recyclable.
+    assert statistics.accuracy() == 50.0  # One of two reviewed results is Correct; ignore the unanswered result.
 
 
-def test_insight_uses_aggregated_statistics_only():
+def test_insight_uses_aggregated_statistics_only():  # Check that the summary prompt excludes item names and top_items.
     generator = InsightGenerator(FakeOpenAIClient())
 
     prompt = generator.summarize({
@@ -102,12 +103,12 @@ def test_insight_uses_aggregated_statistics_only():
     assert "top_items" not in prompt
     assert "Private item name" not in prompt
 
-@pytest.fixture
-def filtered_client(client):
+@pytest.fixture  # Fixture: prepare reusable sample data before a test runs.
+def filtered_client(client):  # Return a Flask test client with four rows across two cities and two dates.
     repository = client.application.config["CLASSIFICATION_REPOSITORY"]
     with closing(sqlite3.connect(repository.db_path)) as conn:
         conn.execute("DELETE FROM classification")
-        conn.executemany(
+        conn.executemany(  # Insert each tuple using placeholders in the same SQL statement.
             "INSERT INTO classification "
             "(item_name, category, region, is_correct, created_at, input_type) "
             "VALUES (?, ?, ?, ?, ?, ?)",
@@ -122,7 +123,7 @@ def filtered_client(client):
     return client
 
 
-def test_stats_api_applies_date_and_city_to_all_results(filtered_client):
+def test_stats_api_applies_date_and_city_to_all_results(filtered_client):  # Check every API statistic uses the selected city and date.
     response = filtered_client.get(
         "/api/stats?start=2026-11-05&end=2026-11-05&region=Berlin"
     )
@@ -139,11 +140,11 @@ def test_stats_api_applies_date_and_city_to_all_results(filtered_client):
     assert [item["item_name"] for item in stats["wrong_results"]] == ["Private item name"]
 
 
-def test_csv_matches_filtered_dashboard(filtered_client):
+def test_csv_matches_filtered_dashboard(filtered_client):  # Check CSV rows match the filtered dashboard counts and percentages.
     query = "?start=2026-11-05&end=2026-11-05&region=Berlin"
     stats = filtered_client.get("/api/stats" + query).get_json()
     response = filtered_client.get("/api/stats/export" + query)
-    rows = list(csv.DictReader(StringIO(response.get_data(as_text=True))))
+    rows = list(csv.DictReader(StringIO(response.get_data(as_text=True))))  # Read CSV text into a list of dictionaries, one per row.
 
     assert response.status_code == 200
     assert "attachment" in response.headers["Content-Disposition"]
@@ -151,21 +152,21 @@ def test_csv_matches_filtered_dashboard(filtered_client):
     assert {row["region"] for row in rows} == {"Berlin"}
     assert {row["created_at"][:10] for row in rows} == {"2026-11-05"}
     assert dict(Counter(row["category"] for row in rows)) == stats["by_category"]
-    assert sum(float(row["is_correct"]) for row in rows) / len(rows) * 100 == stats["accuracy"]
+    assert sum(float(row["is_correct"]) for row in rows) / len(rows) * 100 == stats["accuracy"]  # Both rows in this sample have feedback, so their mean is the accuracy.
 
 
-@pytest.mark.parametrize("query", [
+@pytest.mark.parametrize("query", [  # Run the same date-error test for two invalid query strings.
     "?start=not-a-date",
     "?start=2026-11-06&end=2026-11-05",
 ])
-def test_statistics_routes_reject_invalid_dates(client, query):
+def test_statistics_routes_reject_invalid_dates(client, query):  # Check all three statistics APIs reject invalid dates with HTTP 400.
     assert client.get("/api/stats" + query).status_code == 400
     assert client.get("/api/stats/export" + query).status_code == 400
     assert client.post("/api/stats/summary" + query).status_code == 400
 
 
-def test_summary_uses_filtered_aggregates_only(filtered_client, monkeypatch):
-    monkeypatch.setitem(
+def test_summary_uses_filtered_aggregates_only(filtered_client, monkeypatch):  # Check the summary API filters records and keeps item names private.
+    monkeypatch.setitem(  # Replace the configured client with a fake for this test only.
         filtered_client.application.config, "AI_CLIENT", FakeOpenAIClient()
     )
     response = filtered_client.post(
@@ -181,9 +182,9 @@ def test_summary_uses_filtered_aggregates_only(filtered_client, monkeypatch):
     assert "top_items" not in summary
 
 
-def test_summary_returns_error_when_ai_fails(client, monkeypatch):
-    class BrokenClient:
-        def chat(self, prompt):
+def test_summary_returns_error_when_ai_fails(client, monkeypatch):  # Check an AI failure becomes HTTP 503 with a clear JSON message.
+    class BrokenClient:  # Fake client that simulates an unavailable external service.
+        def chat(self, prompt):  # Raise a simulated AI failure; never returns normally.
             raise RuntimeError("AI unavailable")
 
     monkeypatch.setitem(client.application.config, "AI_CLIENT", BrokenClient())
@@ -193,9 +194,9 @@ def test_summary_returns_error_when_ai_fails(client, monkeypatch):
     assert response.get_json() == {"error": "The summary is not available right now."}
 
 
-def test_empty_summary_does_not_call_ai(client, monkeypatch):
-    class UnusedClient:
-        def chat(self, prompt):
+def test_empty_summary_does_not_call_ai(client, monkeypatch):  # Check empty statistics return No data yet without an AI call.
+    class UnusedClient:  # Fake client that must not be called for empty statistics.
+        def chat(self, prompt):  # Fail the test if chat is called; never returns normally.
             raise AssertionError("Empty statistics must not be sent to AI")
 
     monkeypatch.setitem(client.application.config, "AI_CLIENT", UnusedClient())
@@ -209,14 +210,14 @@ def test_empty_summary_does_not_call_ai(client, monkeypatch):
     assert response.get_json() == {"summary": "No data yet"}
 
 
-def test_demo_data_is_added_once_and_keeps_existing_records(client):
+def test_demo_data_is_added_once_and_keeps_existing_records(client):  # Check demo data is added once and existing records are kept.
     from seed_demo_data import main
 
     repository = client.application.config["CLASSIFICATION_REPOSITORY"]
     before = client.get("/api/stats").get_json()["total"]
     main()
     first = client.get("/api/stats").get_json()
-    main()
+    main()  # A second run must not duplicate the demo records.
     second = client.get("/api/stats").get_json()
 
     assert first["total"] == before + 1000
@@ -231,7 +232,7 @@ def test_demo_data_is_added_once_and_keeps_existing_records(client):
         ).fetchone()[0] == before
 
 
-def test_statistics_for_1000_records_load_within_three_seconds(client):
+def test_statistics_for_1000_records_load_within_three_seconds(client):  # Check the statistics API handles 1,000 records within three seconds.
     repository = client.application.config["CLASSIFICATION_REPOSITORY"]
     with closing(sqlite3.connect(repository.db_path)) as conn:
         conn.execute("DELETE FROM classification")
@@ -243,9 +244,9 @@ def test_statistics_for_1000_records_load_within_three_seconds(client):
         )
         conn.commit()
 
-    started = perf_counter()
+    started = perf_counter()  # Start timing immediately before the API request.
     response = client.get("/api/stats")
-    elapsed = perf_counter() - started
+    elapsed = perf_counter() - started  # Subtract start time to get elapsed seconds.
 
     assert response.status_code == 200
     assert response.get_json()["total"] == 1000
