@@ -26,6 +26,22 @@ A web app that classifies waste from a photo or text with AI (Google Gemini) and
 ### Subsystem 3: Statistics Dashboard
 <img width="2160" height="930" alt="subsystem3_statistics" src="docs/statistics_uml.png" />
 
+
+## One example through all subsystems
+
+A user in Dortmund wants to know where a **plastic bottle** goes.
+
+| Step | Subsystem | What happens | Result |
+|---|---|---|---|
+| 1 | **1 – Waste Classification** | The user types "plastic bottle" (or uploads a photo) and selects Dortmund. The AI (Gemini) finds the waste category. | Category: **packaging** |
+| 2 | **2 – Recycling Rules** | The app looks up the rule for *packaging* in *Dortmund*. | **Gelbe Tonne** (yellow bin), tip: "Empty it, no need to wash." |
+| 3 | **1 – Waste Classification** | The result is saved, and the user confirms it with **Correct**. | Saved in the database with feedback |
+| 4 | **3 – Statistics Dashboard** | The dashboard reads all saved results. | Packaging count +1, recycling rate and accuracy updated |
+| 5 | **2 – Sustainability Coach** | The user asks: "Do I need to wash the bottle?" The coach answers using only Dortmund's rules. | "No, just empty it and put it in the Gelbe Tonne." |
+
+**In short:** Subsystem 1 finds *what* the item is, Subsystem 2 says *where* it goes and *how*, and Subsystem 3 shows *what all users sorted* over time.
+
+
 ## How to run
 
 ### 1. Get the project
